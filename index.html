@@ -1,137 +1,93 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Manga</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f7f9fc;color:#30343b}button,input{font:inherit}.app{max-width:1000px;margin:auto;padding:20px}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}h1{margin:0;font-size:26px}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}nav button,.secondary{border:1px solid #dfe5ee;background:white;border-radius:12px;padding:10px 14px;cursor:pointer}nav button.active{background:#eaf3ff}
-.card{background:white;border:1px solid #e6ebf2;border-radius:18px;padding:18px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-input,textarea,select{width:100%;padding:12px;border:1px solid #d8dee8;border-radius:11px;margin:6px 0 12px}textarea{min-height:90px;resize:vertical}
-.primary{border:0;background:#70acf4;color:white;border-radius:11px;padding:12px 16px;cursor:pointer;font-weight:700}.danger{background:#fff0f0;color:#a33}
-.authWrap{min-height:100vh;display:grid;place-items:center;padding:20px}.auth{width:min(430px,100%);background:white;border:1px solid #e5eaf0;border-radius:22px;padding:26px;box-shadow:0 12px 40px #0000000d}
-label{font-weight:600;font-size:14px;display:block;margin-top:8px}.authMsg{min-height:22px;color:#a33;margin:8px 0}.link{border:0;background:none;color:#4e8ed9;cursor:pointer;padding:8px 0}
-.pw{position:relative}.pw input{padding-right:48px}.eye{position:absolute;right:4px;top:4px;width:40px;height:40px;border:0;background:none;color:#77808d;cursor:pointer}
+*{box-sizing:border-box}body{margin:0;background:#f7f9fc;color:#30343b;font-family:Arial,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.wrap{max-width:1000px;margin:auto;padding:18px}
+.authWrap{min-height:100vh;display:grid;place-items:center;padding:20px}.auth{width:min(430px,100%);background:#fff;border:1px solid #e4e9f0;border-radius:22px;padding:26px;box-shadow:0 12px 40px #0001}
+h1,h2{margin-top:0}label{display:block;font-size:14px;font-weight:700;margin:12px 0 5px}input,textarea,select{width:100%;padding:12px;border:1px solid #d6dde7;border-radius:11px;background:#fff}textarea{min-height:90px}
+.primary{border:0;border-radius:11px;padding:12px 16px;background:#70acf4;color:#fff;font-weight:700}.link{border:0;background:none;color:#4d8dd6;padding:8px 0;display:block}
+.msg{min-height:22px;color:#a33;margin:10px 0}.muted{color:#7e8792}.pw{position:relative}.pw input{padding-right:50px}.eye{position:absolute;right:3px;top:3px;width:42px;height:42px;border:0;background:none;color:#737d89}
 .eyeIcon{display:inline-block;width:19px;height:12px;border:1.8px solid currentColor;border-radius:70% 20% 70% 20%;transform:rotate(45deg);position:relative}.eyeIcon:after{content:"";position:absolute;width:5px;height:5px;border:1.5px solid currentColor;border-radius:50%;left:5px;top:2px}
-.avatar{width:82px;height:82px;border-radius:50%;object-fit:cover;background:#eaf3ff;display:grid;place-items:center;font-size:28px;overflow:hidden}.thumb{width:100%;height:130px;object-fit:cover;border-radius:14px}
-.tags span{display:inline-block;padding:5px 9px;background:#eef5ff;border-radius:99px;margin:3px;font-size:13px}
-.person{display:flex;gap:12px;align-items:center}.muted{color:#818a96}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-</style></head><body>
-<div id="authRoot" class="authWrap"></div>
-<div id="app" class="app" style="display:none">
+header{display:flex;justify-content:space-between;align-items:center;gap:10px}nav{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}nav button,.secondary{border:1px solid #dce3ec;background:#fff;border-radius:11px;padding:10px 13px}nav button.active{background:#eaf3ff}
+.card{background:#fff;border:1px solid #e5eaf1;border-radius:18px;padding:18px;margin:12px 0}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.avatar{width:82px;height:82px;border-radius:50%;object-fit:cover;background:#eaf3ff;display:grid;place-items:center;font-size:28px;overflow:hidden}.thumb{width:100%;height:160px;object-fit:cover;border-radius:15px;margin:12px 0}
+.tags span{display:inline-block;background:#edf5ff;padding:6px 10px;border-radius:99px;margin:3px;font-size:13px}
+.person{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #edf0f4}.person:last-child{border-bottom:0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="authRoot" class="authWrap"><div class="auth"><h1>My Manga</h1><p class="muted">Loading…</p></div></div>
+<div id="app" class="wrap hidden">
 <header><h1>My Manga</h1><button id="logout" class="secondary">Log out</button></header>
-<nav id="nav"><button data-page="home">Home</button><button data-page="library">Library</button><button data-page="explore">Explore</button><button data-page="friends">Friends</button><button data-page="profile">Profile</button><button data-page="settings">Settings</button></nav>
-<main id="view"></main></div>
-
+<nav id="nav">
+<button data-page="home">Home</button><button data-page="library">Library</button>
+<button data-page="explore">Explore</button><button data-page="friends">Friends</button>
+<button data-page="profile">Profile</button><button data-page="settings">Settings</button>
+</nav><main id="view"></main>
+</div>
 <script>
-const SUPABASE_URL='https://anjwxsqcvhpzoillktmy.supabase.co', SUPABASE_KEY='';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let session=null, profile=null, page="home", authMode="login";
-const $=id=>document.getElementById(id);
-const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-async function getProfile(){
- const {data}=await sb.from("profiles").select("*").eq("id",session.user.id).maybeSingle();
- profile=data||{id:session.user.id,username:session.user.user_metadata?.username||"",email:session.user.email};
-}
-function eyeHandlers(root){
- root.querySelectorAll(".eye").forEach(b=>b.onclick=()=>{const i=$(b.dataset.target);i.type=i.type==="password"?"text":"password"})
-}
+const SUPABASE_URL='https://anjwxsqcvhpzoillktmy.supabase.co';
+const SUPABASE_KEY='';
+let sb=null,session=null,profile=null,page="home",authMode="login";
+const $=x=>document.getElementById(x);
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function showError(text){$("authRoot").innerHTML='<div class="auth"><h1>My Manga</h1><p class="msg">'+esc(text)+'</p><button class="primary" onclick="location.reload()">Reload</button></div>';}
 function authScreen(mode="login"){
  authMode=mode;
- $("authRoot").innerHTML=`<div class="auth">
- <h1>${mode==="login"?"Log in":"Create an account"}</h1>
+ $("authRoot").innerHTML=`<div class="auth"><h1>${mode==="login"?"Log in":"Create an account"}</h1>
  <p class="muted">${mode==="login"?"Username or email":"Create your My Manga account"}</p>
  ${mode==="signup"?`<label>Email</label><input id="email" type="email" autocomplete="email">
- <label>Username</label><input id="username" autocomplete="username">`:""}
- ${mode==="login"?`<label>Username or email</label><input id="login" autocomplete="username">`:""}
- <label>Password</label><div class="pw"><input id="pass" type="password" autocomplete="${mode==="login"?"current-password":"new-password"}"><button class="eye" data-target="pass" type="button"><span class="eyeIcon"></span></button></div>
- ${mode==="signup"?`<label>Repeat password</label><div class="pw"><input id="pass2" type="password" autocomplete="new-password"><button class="eye" data-target="pass2" type="button"><span class="eyeIcon"></span></button></div>`:""}
- <div id="authMsg" class="authMsg"></div>
- <button id="authBtn" class="primary">${mode==="login"?"Login":"Create account"}</button>
+ <label>Username</label><input id="username" autocomplete="username">`:`<label>Username or email</label><input id="login" autocomplete="username">`}
+ <label>Password</label><div class="pw"><input id="pass" type="password" autocomplete="${mode==="login"?"current-password":"new-password"}"><button type="button" class="eye" data-target="pass"><span class="eyeIcon"></span></button></div>
+ ${mode==="signup"?`<label>Repeat password</label><div class="pw"><input id="pass2" type="password" autocomplete="new-password"><button type="button" class="eye" data-target="pass2"><span class="eyeIcon"></span></button></div>`:""}
+ <div id="authMsg" class="msg"></div><button id="authBtn" class="primary" style="width:100%">${mode==="login"?"Login":"Create account"}</button>
  <button id="switch" class="link">${mode==="login"?"Create an account":"Already have an account? Log in"}</button>
- ${mode==="login"?`<button id="forgot" class="link">Forgot password?</button>`:""}
- </div>`;
- eyeHandlers($("authRoot"));
- $("authBtn").onclick=doAuth;
- $("switch").onclick=()=>authScreen(mode==="login"?"signup":"login");
+ ${mode==="login"?`<button id="forgot" class="link">Forgot password?</button>`:""}</div>`;
+ document.querySelectorAll(".eye").forEach(b=>b.onclick=()=>{const i=$(b.dataset.target);i.type=i.type==="password"?"text":"password"});
+ $("authBtn").onclick=doAuth;$("switch").onclick=()=>authScreen(mode==="login"?"signup":"login");
  if($("forgot"))$("forgot").onclick=()=>location.href="./forgot-password.html";
 }
 async function doAuth(){
  const msg=$("authMsg");msg.textContent="";
  try{
-  const pass=$("pass").value;
   if(authMode==="signup"){
-   const email=$("email").value.trim(), username=$("username").value.trim();
-   if(!email||!username||!pass)throw Error("Please fill in every field.");
+   const email=$("email").value.trim(),username=$("username").value.trim(),pass=$("pass").value;
+   if(!email||!username||!pass)throw Error("Fill in all fields.");
    if(pass!==$("pass2").value)throw Error("Passwords do not match.");
    const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{username},emailRedirectTo:location.origin+location.pathname.replace(/\/$/,"")+"/verification.html"}});
    if(error)throw error;
-   msg.textContent=data.session?"Account created.":"Account created. Check your email to verify your account.";
-   if(data.session){session=data.session;await ensureProfile(username,email);showApp()}
+   if(data.session){session=data.session;await ensureProfile(username,email);showApp()}else msg.textContent="Account created. Check your email to verify your account.";
   }else{
-   const login=$("login").value.trim();if(!login||!pass)throw Error("Enter your username/email and password.");
+   const login=$("login").value.trim(),pass=$("pass").value;if(!login||!pass)throw Error("Enter your username/email and password.");
    let email=login;
-   if(!login.includes("@")){
-    const {data,error}=await sb.from("profiles").select("email").eq("username",login).maybeSingle();
-    if(error||!data?.email)throw Error("Username not found.");
-    email=data.email;
-   }
-   const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-   if(error)throw error;session=data.session;await getProfile();showApp();
+   if(!login.includes("@")){const {data,error}=await sb.from("profiles").select("email").eq("username",login).maybeSingle();if(error||!data?.email)throw Error("Username not found.");email=data.email}
+   const {data,error}=await sb.auth.signInWithPassword({email,password:pass});if(error)throw error;
+   session=data.session;await getProfile();showApp();
   }
  }catch(e){msg.textContent=e.message||"Something went wrong."}
 }
-async function ensureProfile(username,email){
- const row={id:session.user.id,username,email,display_name:username,bio:"",tags:[],is_public:true};
- await sb.from("profiles").upsert(row,{onConflict:"id"});
- profile=row;
-}
-function showApp(){ $("authRoot").style.display="none";$("app").style.display="block";render(); }
-function hideApp(){ $("authRoot").style.display="grid";$("app").style.display="none";authScreen("login"); }
+async function getProfile(){const {data}=await sb.from("profiles").select("*").eq("id",session.user.id).maybeSingle();profile=data||{id:session.user.id,username:session.user.user_metadata?.username||"",email:session.user.email}}
+async function ensureProfile(username,email){const row={id:session.user.id,username,email,display_name:username,bio:"",tags:[],is_public:true};await sb.from("profiles").upsert(row,{onConflict:"id"});profile=row}
+function showApp(){$("authRoot").classList.add("hidden");$("app").classList.remove("hidden");render()}
 function render(){
  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
  const v=$("view");
- if(page==="profile")return renderProfile(v);
- if(page==="settings")return renderSettings(v);
- if(page==="explore")return renderExplore(v);
- if(page==="friends")return renderFriends(v);
- if(page==="library")return v.innerHTML='<div class="card"><h2>Library</h2><p class="muted">Your saved manga will appear here.</p></div>';
- v.innerHTML='<div class="card"><h2>Home</h2><p>Welcome back, '+esc(profile?.display_name||profile?.username||"reader")+'!</p><p class="muted">Explore manga and people from the navigation above.</p></div>';
+ if(page==="profile")return profilePage(v);if(page==="settings")return settingsPage(v);if(page==="explore")return explorePage(v);if(page==="friends")return friendsPage(v);
+ if(page==="library")return v.innerHTML='<div class="card"><h2>Library</h2><p class="muted">Your manga library will appear here.</p></div>';
+ v.innerHTML='<div class="card"><h2>Home</h2><p>Welcome back, '+esc(profile?.display_name||profile?.username||"reader")+'!</p><p class="muted">Explore manga and people using the navigation above.</p></div>';
 }
-function renderProfile(v){
- const p=profile||{}, tags=(p.tags||[]).map(t=>`<span>${esc(t)}</span>`).join("");
- v.innerHTML=`<div class="card"><div class="row">
- <div class="avatar">${p.avatar_url?`<img class="avatar" src="${esc(p.avatar_url)}">`:"♡"}</div><div><h2>${esc(p.display_name||p.username||"My Profile")}</h2><div class="muted">@${esc(p.username||"not set")}</div></div></div>
- ${p.thumbnail_url?`<img class="thumb" src="${esc(p.thumbnail_url)}">`:""}<p>${esc(p.bio||"No bio yet.")}</p><div class="tags">${tags}</div><p class="muted">${p.is_public===false?"Private profile":"Public profile"}</p><button class="primary" onclick="editProfile()">Customize profile</button></div>`;
-}
-function renderSettings(v){
- v.innerHTML=`<div class="card"><h2>Settings</h2><p>Username: <b>@${esc(profile?.username||"not set")}</b></p><p>Email: <b>${esc(session.user.email||"")}</b></p><p>Profile: <b>${profile?.is_public===false?"Private":"Public"}</b></p><button class="primary" onclick="editProfile()">Edit profile</button></div>`;
-}
-async function renderExplore(v){
- v.innerHTML='<div class="card"><h2>Explore People</h2><input id="peopleSearch" placeholder="Search username"><div id="people"></div></div>';
- const load=async()=>{const q=$("peopleSearch").value.trim();let query=sb.from("profiles").select("id,username,display_name,bio,tags,avatar_url,is_public").eq("is_public",true).neq("id",session.user.id).limit(30);if(q)query=query.ilike("username","%"+q+"%");const {data,error}=await query;if(error){$("people").textContent=error.message;return}$("people").innerHTML=(data||[]).map(p=>`<div class="card person"><div class="avatar">${p.avatar_url?`<img class="avatar" src="${esc(p.avatar_url)}">`:"♡"}</div><div><b>${esc(p.display_name||p.username)}</b><div class="muted">@${esc(p.username)}</div><button class="secondary" onclick="sendFriend('${p.id}')">Add friend</button></div></div>`).join("")||'<p class="muted">No people found.</p>'};
- $("peopleSearch").oninput=load;load();
-}
-async function renderFriends(v){
- const {data}=await sb.from("friend_requests").select("*").or("sender_id.eq."+session.user.id+",receiver_id.eq."+session.user.id).eq("status","accepted");
- v.innerHTML='<div class="card"><h2>Friends</h2><p class="muted">Accepted friends will appear here.</p><div id="friendList"></div></div>';
- const ids=(data||[]).map(x=>x.sender_id===session.user.id?x.receiver_id:x.sender_id);
- if(ids.length){const {data:p}=await sb.from("profiles").select("username,display_name").in("id",ids);$("friendList").innerHTML=(p||[]).map(x=>`<div class="card">@${esc(x.username)} — ${esc(x.display_name||x.username)}</div>`).join("")}
-}
-async function sendFriend(id){const {error}=await sb.from("friend_requests").upsert({sender_id:session.user.id,receiver_id:id,status:"pending"},{onConflict:"sender_id,receiver_id"});alert(error?error.message:"Friend request sent.");}
-async function editProfile(){
- const p=profile||{};const v=$("view");v.innerHTML=`<div class="card"><h2>Customize Profile</h2>
- <label>Profile picture URL</label><input id="avatarUrl" value="${esc(p.avatar_url||"")}" placeholder="Image URL">
- <label>Thumbnail URL</label><input id="thumbUrl" value="${esc(p.thumbnail_url||"")}" placeholder="Image URL">
- <label>Display name</label><input id="display" value="${esc(p.display_name||"")}">
- <label>Username</label><input id="uname" value="${esc(p.username||"")}">
- <label>Bio</label><textarea id="bio">${esc(p.bio||"")}</textarea>
- <label>Manga tags</label><input id="tags" value="${esc((p.tags||[]).join(", "))}" placeholder="Yuri, GL, BL, Yaoi, Romance, Fantasy">
- <label>Profile visibility</label><select id="public"><option value="true">Public profile</option><option value="false">Private profile</option></select>
- <button class="primary" id="saveProfile">Save profile</button></div>`;$("public").value=String(p.is_public!==false);
- $("saveProfile").onclick=async()=>{const row={display_name:$("display").value.trim(),username:$("uname").value.trim(),bio:$("bio").value.trim(),tags:$("tags").value.split(",").map(x=>x.trim()).filter(Boolean),is_public:$("public").value==="true",avatar_url:$("avatarUrl").value.trim()||null,thumbnail_url:$("thumbUrl").value.trim()||null,email:session.user.email};const {error}=await sb.from("profiles").update(row).eq("id",session.user.id);if(error)return alert(error.message);await getProfile();page="profile";render()}
-}
+function profilePage(v){const p=profile||{};v.innerHTML=`<div class="card"><div class="row"><div class="avatar">${p.avatar_url?`<img class="avatar" src="${esc(p.avatar_url)}">`:"♡"}</div><div><h2>${esc(p.display_name||p.username||"My Profile")}</h2><div class="muted">@${esc(p.username||"not set")}</div></div></div>${p.thumbnail_url?`<img class="thumb" src="${esc(p.thumbnail_url)}">`:""}<p>${esc(p.bio||"No bio yet.")}</p><div class="tags">${(p.tags||[]).map(t=>`<span>${esc(t)}</span>`).join("")}</div><p class="muted">${p.is_public===false?"Private profile":"Public profile"}</p><button class="primary" onclick="editProfile()">Customize profile</button></div>`}
+function settingsPage(v){v.innerHTML=`<div class="card"><h2>Settings</h2><p>Username: <b>@${esc(profile?.username||"not set")}</b></p><p>Email: <b>${esc(session.user.email||"")}</b></p><p>Profile: <b>${profile?.is_public===false?"Private":"Public"}</b></p><button class="primary" onclick="editProfile()">Edit profile</button></div>`}
+async function explorePage(v){v.innerHTML='<div class="card"><h2>Explore People</h2><input id="q" placeholder="Search username"><div id="people"></div></div>';async function load(){let q=$("q").value.trim();let x=sb.from("profiles").select("id,username,display_name,bio,tags,avatar_url,is_public").eq("is_public",true).neq("id",session.user.id).limit(30);if(q)x=x.ilike("username","%"+q+"%");const {data,error}=await x;if(error)return $("people").textContent=error.message;$("people").innerHTML=(data||[]).map(p=>`<div class="person"><div class="avatar">${p.avatar_url?`<img class="avatar" src="${esc(p.avatar_url)}">`:"♡"}</div><div><b>${esc(p.display_name||p.username)}</b><div class="muted">@${esc(p.username)}</div><button class="secondary" onclick="sendFriend('${p.id}')">Add friend</button></div></div>`).join("")||"<p class='muted'>No people found.</p>"}$("q").oninput=load;load()}
+async function friendsPage(v){const {data,error}=await sb.from("friend_requests").select("*").or("sender_id.eq."+session.user.id+",receiver_id.eq."+session.user.id).eq("status","accepted");if(error)return v.innerHTML='<div class="card">'+esc(error.message)+'</div>';const ids=(data||[]).map(x=>x.sender_id===session.user.id?x.receiver_id:x.sender_id);v.innerHTML='<div class="card"><h2>Friends</h2><div id="friends"></div></div>';if(!ids.length)return $("friends").innerHTML='<p class="muted">No friends yet.</p>';const {data:p}=await sb.from("profiles").select("username,display_name").in("id",ids);$("friends").innerHTML=(p||[]).map(x=>`<p>@${esc(x.username)} — ${esc(x.display_name||x.username)}</p>`).join("")}
+async function sendFriend(id){const {error}=await sb.from("friend_requests").upsert({sender_id:session.user.id,receiver_id:id,status:"pending"},{onConflict:"sender_id,receiver_id"});alert(error?"Unable to send request: "+error.message:"Friend request sent.")}
+async function editProfile(){const p=profile||{};$("view").innerHTML=`<div class="card"><h2>Customize Profile</h2><label>Profile picture URL</label><input id="av" value="${esc(p.avatar_url||"")}"><label>Thumbnail URL</label><input id="th" value="${esc(p.thumbnail_url||"")}"><label>Display name</label><input id="dn" value="${esc(p.display_name||"")}"><label>Username</label><input id="un" value="${esc(p.username||"")}"><label>Bio</label><textarea id="bio">${esc(p.bio||"")}</textarea><label>Manga tags</label><input id="tg" value="${esc((p.tags||[]).join(", "))}" placeholder="Yuri, GL, BL, Yaoi, Romance, Fantasy"><label>Profile visibility</label><select id="pub"><option value="true">Public profile</option><option value="false">Private profile</option></select><button class="primary" id="save">Save profile</button></div>`;$("pub").value=String(p.is_public!==false);$("save").onclick=async()=>{const row={avatar_url:$("av").value.trim()||null,thumbnail_url:$("th").value.trim()||null,display_name:$("dn").value.trim(),username:$("un").value.trim(),bio:$("bio").value.trim(),tags:$("tg").value.split(",").map(x=>x.trim()).filter(Boolean),is_public:$("pub").value==="true",email:session.user.email};const {error}=await sb.from("profiles").update(row).eq("id",session.user.id);if(error)return alert(error.message);await getProfile();page="profile";render()}}
 document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{page=b.dataset.page;render()});
-$("logout").onclick=async()=>{await sb.auth.signOut();session=null;profile=null;hideApp()};
-(async()=>{const {data}=await sb.auth.getSession();if(data.session){session=data.session;await getProfile();showApp()}else authScreen("login")})();
+$("logout").onclick=async()=>{await sb.auth.signOut();session=null;profile=null;$("app").classList.add("hidden");$("authRoot").classList.remove("hidden");authScreen("login")};
+(async()=>{try{if(!window.supabase)throw Error("Supabase library did not load. Check your internet connection.");sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const {data,error}=await sb.auth.getSession();if(error)throw error;if(data.session){session=data.session;await getProfile();showApp()}else authScreen("login")}catch(e){showError(e.message||"Unable to start My Manga.")}})();
 </script></body></html>
