@@ -89,7 +89,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px
 <button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button>
 <button class="authSwitch" id="switchAuth">Create an account</button>
 <button class="authSwitch" id="forgot">Forgot password?</button>
-</div></div>div>
+</div></div>
 
 <script>
 const SUPABASE_URL="https://anjwxsqcvhpzoillktmy.supabase.co";
@@ -124,7 +124,7 @@ async function loadProfile(){
 async function loadManga(){items=await api("manga?select=*&order=created_at.desc");render()}
 async function createProfile(username){
  try{
-  const body={id:session.user.id,username,display_name:username,bio:"",avatar_emoji:"♡",profile_color:"#e8f3ff"};
+  const body={id:session.user.id,username,email:session.user.email||"",display_name:username,bio:"",avatar_emoji:"♡",profile_color:"#e8f3ff"};
   await api("profiles",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify(body)});
  }catch(e){}
 }
@@ -195,7 +195,7 @@ async function searchPeople(){
  }catch(e){alert(e.message)}
 }
 async function loadPeople(){
- try{peopleCache=await api("profiles?select=*&order=created_at.desc&limit=8")||[]}catch(e){peopleCache=[]}
+ try{peopleCache=(await api("profiles?select=*&order=created_at.desc&limit=8")||[]).filter(x=>x.is_public!==false)}catch(e){peopleCache=[]}
 }
 window.sendFriend=async id=>{
  try{
@@ -237,6 +237,7 @@ function renderProfile(v){
  if(p.is_public===false && p.id!==session?.user?.id){v.innerHTML=`<div class="statBox">This profile is private.</div>`;return}
  const tags=(p.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("");
  v.innerHTML=`<div class="profileHero">
+ ${p.thumbnail_url?`<img class="profileThumb" src="${esc(p.thumbnail_url)}">`:""}
  <div class="avatarBig" style="background:${esc(p.profile_color||"#e8f3ff")}">${p.avatar_url?`<img src="${esc(p.avatar_url)}">`:(p.avatar_emoji||"♡")}</div>
  <h2>${esc(p.display_name||p.username||"My Profile")}</h2><div class="meta">@${esc(p.username||"not set")}</div>
  <p>${esc(p.bio||"No bio yet.")}</p><div>${tags||'<span class="tag">Add manga tags</span>'}</div>
@@ -303,13 +304,33 @@ function setAuthMode(mode){
 try{updates=JSON.parse(localStorage.getItem("mymanga_updates")||"[]")}catch(e){updates=[]}
 
 applyAccent(localStorage.getItem("accent")||"#70acf4");applyTheme(localStorage.getItem("theme")||"light");showVerificationBanner();
-</script>
-</body>
-</html><script>
-document.addEventListener("click",function(e){
+
+$("authBtn").onclick=doAuth;
+$("switchAuth").onclick=()=>setAuthMode(authMode==="login"?"signup":"login");
+$("forgot").onclick=()=>{location.href="https://what839.github.io/mymanga/forgot-password.html"};
+document.addEventListener("click",e=>{
  const b=e.target.closest(".pwEye"); if(!b)return;
  const i=document.getElementById(b.dataset.target); if(!i)return;
  i.type=i.type==="password"?"text":"password";
- b.textContent=i.type==="password"?"":"";
 });
+document.querySelectorAll(".nav[data-page]").forEach(b=>b.onclick=()=>{
+ page=b.dataset.page;
+ document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n===b));
+ render();
+});
+$("fab").onclick=openAdd;
+$("navAdd").onclick=openAdd;
+$("cancelAdd").onclick=closeAdd;
+$("saveAdd").onclick=saveAdd;
+$("cancelEdit").onclick=()=>$("editModal").classList.remove("open");
+$("saveEdit").onclick=saveEdit;
+$("search").oninput=render;
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+ active=b.dataset.s;
+ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t===b));
+ render();
+});
+try{setAuthMode("login")}catch(e){}
 </script>
+</body>
+</html>
