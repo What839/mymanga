@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Manga</title><script>
+(function(){
+  var l=window.location;
+  var base=l.pathname.split("/").slice(0,2).join("/");
+  var rest=l.pathname.split("/").slice(2).join("/");
+  var target=base+"/?/"+rest;
+  if(l.search) target+="&"+l.search.slice(1).replace(/&/g,"~and~");
+  if(l.hash) target+=l.hash;
+  l.replace(l.protocol+"//"+l.host+target);
+})();
+</script></head><body></body></html>
