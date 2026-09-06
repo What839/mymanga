@@ -11,7 +11,7 @@ header{padding:17px 15px 9px;background:var(--card);position:sticky;top:0;z-inde
 .tools{display:flex;gap:7px}.tool{border:1px solid var(--line);background:var(--card);color:var(--a);border-radius:13px;padding:9px 11px;font-weight:600}
 .search{margin-top:12px;width:100%;border:1px solid var(--line);border-radius:16px;padding:12px 15px;background:var(--bg);color:var(--text);outline:0}
 .tabs{display:flex;gap:8px;overflow:auto;padding:10px 0 3px}.tab{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--a);border-radius:20px;padding:8px 13px;font-weight:600}.tab.active{background:var(--a);color:#fff}
-main{padding:14px 12px 100px;max-width:1000px;margin:auto}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+main{padding:14px 12px 100px;max-width:1000px;margin:auto}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:9px;box-shadow:0 5px 18px #a9c9e52b;position:relative;min-width:0}.cover{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:11px;background:var(--a2);display:block}
 .heart{position:absolute;right:16px;top:16px;width:34px;height:34px;border:0;border-radius:50%;background:#fffffff0;font-size:21px;color:var(--a)}.title{font-size:18px;font-weight:600;margin:10px 3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status{display:inline-block;border-radius:20px;padding:5px 9px;background:var(--a2);color:var(--a);font-size:12px;font-weight:600}.meta{font-size:13px;color:var(--muted);margin:4px 3px}.desc{font-size:12px;color:var(--muted);line-height:1.4;margin:8px 3px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .linkBtn{width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:var(--a2);color:var(--a);display:grid;place-items:center;text-decoration:none;font-size:21px;margin:7px 0 4px 3px}.delete{margin-top:7px;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:12px;padding:8px 12px;font-weight:600}
@@ -63,15 +63,87 @@ nav{position:fixed;left:10px;right:10px;bottom:10px;height:64px;border:1px solid
   padding:2px 5px !important;
   font-size:10px !important;
 }
+
+/* FINAL: three-column proportional library */
+.grid{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:9px !important;
+}
+.card{
+  padding:7px !important;
+  border-radius:14px !important;
+  min-width:0 !important;
+}
+.cover{
+  width:100% !important;
+  aspect-ratio:3/4 !important;
+  object-fit:cover !important;
+  border-radius:9px !important;
+}
+.title{
+  font-size:13px !important;
+  line-height:1.15 !important;
+  margin:6px 2px 4px !important;
+}
+.status{
+  font-size:10px !important;
+  padding:4px 7px !important;
+}
+.meta{
+  font-size:10px !important;
+  margin:3px 2px !important;
+}
+.desc{
+  font-size:10px !important;
+  line-height:1.25 !important;
+  margin:5px 2px !important;
+  -webkit-line-clamp:2 !important;
+}
+.linkBtn{
+  width:32px !important;
+  height:28px !important;
+  font-size:13px !important;
+}
+.card .heart{
+  width:27px !important;
+  height:27px !important;
+  right:10px !important;
+  top:10px !important;
+  font-size:17px !important;
+}
+.card .actions{
+  gap:4px !important;
+  margin-top:5px !important;
+}
+.card .actions button{
+  min-height:27px !important;
+  padding:3px 5px !important;
+  font-size:10px !important;
+}
+@media(max-width:380px){
+  .grid{gap:7px !important}
+  .card{padding:5px !important}
+  .title{font-size:12px !important}
+}
+
+.uploadChoices{display:flex;gap:8px}
+.uploadChoices .fileBox{flex:1;text-align:center;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:11px;color:var(--muted);font-weight:600;cursor:pointer}
 </style></head><body>
 <header><div class="top"><div class="brand">My Manga</div><div class="tools"><button class="tool" id="sortBtn">↕ Sort</button><button class="tool notifyTool" id="notifyBtn" title="Notifications"><span class="bellIcon" aria-label="Notifications"></span><span id="dot" style="display:none;color:var(--a);margin-left:3px">●</span></button><button class="tool" id="filterBtn">♡</button></div></div>
-<input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Dropped">Dropped</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
+<input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
 <main><div id="verifyBanner" class="verifyBanner"></div><div id="view"></div></main>
 <button class="fab" id="fab">+</button>
 <nav><button class="nav active" data-page="library"><span class="navIcon">▤</span>My Library</button><button class="nav" id="navAdd"><span class="navIcon">＋</span>Add</button><button class="nav" data-page="stats"><span class="navIcon">▥</span>Stats</button><button class="nav" data-page="settings"><span class="navIcon">⚙</span>Settings</button></nav>
 <div class="panel" id="updates"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:20px">Manga Updates</strong><button class="tool" id="closeUpdates">×</button></div><div id="updateList" style="margin-top:10px;color:var(--muted)">No updates yet.</div><button class="btn save" id="checkUpdates" style="width:100%;margin-top:12px">Check for updates</button></div>
-<div class="modal" id="addModal"><div class="sheet"><h2>Add Manga</h2><label>Manga Name</label><input id="mName" placeholder="Manga name"><div class="row"><div><label>Status</label><select id="mStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option><option>Dropped</option><option>Want to Read</option></select></div><div><label>Chapter</label><input id="mChapter" type="number" min="0" value="0"></div></div><label>Link</label><input id="mLink" type="url" placeholder="https://..."><label>Description</label><textarea id="mDesc" placeholder="Description..."></textarea><label>Cover Picture</label><label class="fileBox" for="mCover">Choose cover image<input id="mCover" type="file" accept="image/*"></label><img id="mPreview" class="preview"><label>Favorite</label><select id="mFav"><option value="no">♡ No</option><option value="yes">♥ Yes</option></select><div class="actions"><button class="btn cancel" id="cancelAdd">Cancel</button><button class="btn save" id="saveAdd">Add Manga</button></div></div></div>
-<div class="modal" id="editModal"><div class="sheet"><h2>Edit Manga</h2><input id="eId" type="hidden"><label>Manga Name</label><input id="eName"><div class="row"><div><label>Status</label><select id="eStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option><option>Dropped</option><option>Want to Read</option></select></div><div><label>Chapter</label><input id="eChapter" type="number" min="0"></div></div><label>Link</label><input id="eLink" type="url"><label>Description</label><textarea id="eDesc"></textarea><div class="actions"><button class="btn cancel" id="cancelEdit">Cancel</button><button class="btn save" id="saveEdit">Save Changes</button></div></div></div>
+<div class="modal" id="addModal"><div class="sheet"><h2>Add Manga</h2><label>Manga Name</label><input id="mName" placeholder="Manga name"><div class="row"><div><label>Status</label><select id="mStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option></select></div><div><label>Chapter</label><input id="mChapter" type="number" min="0" value="0"></div></div><label>Link</label><input id="mLink" type="url" placeholder="https://..."><label>Description</label><textarea id="mDesc" placeholder="Description..."></textarea><label>Cover Picture</label>
+<div class="uploadChoices">
+  <button type="button" class="fileBox" id="chooseGallery">Choose from Gallery</button>
+  <button type="button" class="fileBox" id="takePhoto">Take Photo</button>
+</div>
+<input id="mCover" type="file" accept="image/*" style="display:none">
+<input id="mCamera" type="file" accept="image/*" capture="environment" style="display:none"><img id="mPreview" class="preview"><label>Favorite</label><select id="mFav"><option value="no">No</option><option value="yes">Yes</option></select><div class="actions"><button class="btn cancel" id="cancelAdd">Cancel</button><button class="btn save" id="saveAdd">Add Manga</button></div></div></div>
+<div class="modal" id="editModal"><div class="sheet"><h2>Edit Manga</h2><input id="eId" type="hidden"><label>Manga Name</label><input id="eName"><div class="row"><div><label>Status</label><select id="eStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option></select></div><div><label>Chapter</label><input id="eChapter" type="number" min="0"></div></div><label>Link</label><input id="eLink" type="url"><label>Description</label><textarea id="eDesc"></textarea><div class="actions"><button class="btn cancel" id="cancelEdit">Cancel</button><button class="btn save" id="saveEdit">Save Changes</button></div></div></div>
 <div class="auth open" id="auth"><div class="authbox"><div class="authTitle">My Manga</div><div class="authSub" id="authSub">Log in to sync your manga library</div><label id="loginLabel">Username or email</label><input id="aEmail" placeholder="Username or email" autocomplete="username"><label id="userLabel" style="display:none">Username</label><input id="aUser" style="display:none" placeholder="Username" autocomplete="username"><label>Password</label><div class="pwWrap"><input id="aPass" type="password" placeholder="Password" autocomplete="current-password"><button type="button" class="pwEye" data-target="aPass"><span class="eyeIcon"></span></button></div><div id="repeatWrap" style="display:none"><label>Repeat password</label><div class="pwWrap"><input id="aPass2" type="password" placeholder="Repeat your password" autocomplete="new-password"><button type="button" class="pwEye" data-target="aPass2"><span class="eyeIcon"></span></button></div></div><div class="authMsg" id="authMsg"></div><button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button><button class="authSwitch" id="switchAuth">Create an account</button><button class="authSwitch" id="forgot">Forgot password?</button></div></div>
 <script>
 const SUPABASE_URL="https://anjwxsqcvhpzoillktmy.supabase.co"; const SUPABASE_KEY="sb_publishable_pas11tpmdKbIMk8NyOTCRw_O0QAUPnt";
@@ -86,7 +158,10 @@ async function getUsernameByLogin(value){if(value.includes("@"))return value;con
 function render(){const v=$("view");if(page==="stats")return renderStats(v);if(page==="settings")return renderSettings(v);return renderLibrary(v)}
 function renderLibrary(v){let q=$("search").value.toLowerCase();let shown=items.filter(x=>active==="All"||x.status===active||(active==="Favorites"&&x.favorite)).filter(x=>x.name.toLowerCase().includes(q));let html='<div class="grid">';shown.forEach(x=>{html+=`<article class="card"><img class="cover" src="${esc(x.cover_url||"")}" alt=""><button class="heart" onclick="toggleFav('${x.id}')">${x.favorite?"♥":"♡"}</button><div class="title">${esc(x.name)}</div><div class="status">${esc(x.status||"")}</div><div class="meta">Chapter: ${esc(x.chapter||"0")}</div>${x.link?`<a class="linkBtn" href="${esc(x.link)}" target="_blank" rel="noopener">↗</a>`:""}${x.description?`<div class="desc">${esc(x.description)}</div>`:""}<button class="delete" onclick="editManga('${x.id}')">Edit</button> <button class="delete" onclick="deleteManga('${x.id}')">Delete</button></article>`});html+='<button class="card addCard" onclick="openAdd()"><span class="plus">+</span><span class="addText">Add Manga</span></button></div>';v.innerHTML=html}
 function renderStats(v){const total=items.length,read=items.filter(x=>x.status==="Reading").length,done=items.filter(x=>x.status==="Completed").length,fav=items.filter(x=>x.favorite).length;v.innerHTML=`<div class="sectionTitle">Statistics</div><div class="statBox"><div class="statNum">${total}</div>Total manga</div><div class="statBox"><div class="statNum">${read}</div>Reading</div><div class="statBox"><div class="statNum">${done}</div>Completed</div><div class="statBox"><div class="statNum">${fav}</div>Favorites</div>`}
-async function renderSettings(v){const verified=!!session?.user?.email_confirmed_at;let username=session?.user?.user_metadata?.username||"";try{const p=await api("profiles?select=username&id=eq."+encodeURIComponent(session.user.id));username=p?.[0]?.username||username}catch(e){}v.innerHTML=`<div class="sectionTitle">Settings</div><div class="statBox"><div class="settingRow"><span>Username</span><span class="userPill">@${esc(username||"not set")}</span></div><div class="settingRow"><span>Email</span><span class="userPill">${esc(session?.user?.email||"")}</span></div><div class="settingRow"><span>Email status</span><span class="userPill" style="${verified?"":"color:#b46b2c;background:#fff4e7"}">${verified?"Verified":"Not verified"}</span></div></div><div class="statBox"><div class="settingRow"><span>Appearance</span><select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingRow"><span>Accent color</span><input id="accent" class="colorInput" type="color" value="${localStorage.getItem("accent")||"#70acf4"}"></div><div style="padding-top:16px"><button class="logout" id="logout">Log out</button></div></div>`;$("theme").value=localStorage.getItem("theme")||"light";applyTheme($("theme").value);$("theme").onchange=e=>{localStorage.setItem("theme",e.target.value);applyTheme(e.target.value)};$("accent").onchange=e=>{localStorage.setItem("accent",e.target.value);applyAccent(e.target.value)};$("logout").onclick=logout}
+async function renderSettings(v){const verified=!!session?.user?.email_confirmed_at;let username=session?.user?.user_metadata?.username||"";try{const p=await api("profiles?select=username&id=eq."+encodeURIComponent(session.user.id));username=p?.[0]?.username||username}catch(e){}v.innerHTML=`<div class="sectionTitle">Settings</div><div class="statBox"><div class="settingRow"><span>Username</span><span class="userPill">@${esc(username||"not set")}</span></div><div class="settingRow"><span>Email</span><span class="userPill">${esc(session?.user?.email||"")}</span></div><div class="settingRow"><span>Email status</span><span class="userPill" style="${verified?"":"color:#b46b2c;background:#fff4e7"}">${verified?"Verified":"Not verified"}</span></div></div><div class="statBox"><div class="settingRow"><span>Appearance</span><select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingRow"><span>Accent color</span><input id="accent" class="colorInput" type="color" value="${localStorage.getItem("accent")||"#70acf4"}"></div><div style="padding-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn save" id="shareLibrary" type="button">Share My Library</button>
+<button class="logout" id="logout">Log out</button>
+</div></div>`;$("theme").value=localStorage.getItem("theme")||"light";applyTheme($("theme").value);$("theme").onchange=e=>{localStorage.setItem("theme",e.target.value);applyTheme(e.target.value)};$("accent").onchange=e=>{localStorage.setItem("accent",e.target.value);applyAccent(e.target.value)};$("logout").onclick=logout;$("shareLibrary").onclick=shareLibrary}
 function applyAccent(c){document.documentElement.style.setProperty("--a",c);document.documentElement.style.setProperty("--a2",hexToRgba(c,.13))}function hexToRgba(h,a){h=h.replace("#","");if(h.length!==6)return "rgba(112,172,244,.13)";let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return `rgba(${r},${g},${b},${a})`}function applyTheme(t){document.documentElement.style.setProperty("--bg",t==="dark"?"#101720":"#fbfdff");document.documentElement.style.setProperty("--card",t==="dark"?"#182330":"#fff");document.documentElement.style.setProperty("--text",t==="dark"?"#e7f1ff":"#29486b");document.documentElement.style.setProperty("--muted",t==="dark"?"#9db2c9":"#7690ae");document.documentElement.style.setProperty("--line",t==="dark"?"#2a3b4f":"#dcecff")}
 function openAdd(){$('addModal').classList.add('open')}function closeAdd(){$('addModal').classList.remove('open')}
 async function saveAdd(){const f=$("mCover").files[0],n=$("mName").value.trim();if(!n||!f){alert("Please enter a manga name and choose a cover picture.");return}const reader=new FileReader();reader.onload=async e=>{try{await api("manga",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({user_id:session.user.id,name:n,status:$("mStatus").value,chapter:$("mChapter").value||"0",link:$("mLink").value.trim(),description:$("mDesc").value.trim(),cover_url:e.target.result,favorite:$("mFav").value==="yes"})});closeAdd();await loadManga()}catch(err){alert(err.message)}};reader.readAsDataURL(f)}
@@ -94,11 +169,84 @@ window.toggleFav=async id=>{let x=items.find(a=>a.id===id);try{await api("manga?
 async function logout(){await sb.auth.signOut();session=null;items=[];page="library";$("auth").classList.add("open");msg("")}
 async function doAuth(){try{const loginValue=$("aEmail").value.trim(),pass=$("aPass").value;if(!loginValue||!pass)throw new Error("Enter your username/email and password.");if(authMode==="login"){let email=loginValue;if(!loginValue.includes("@")){const rows=await fetch(SUPABASE_URL+"/rest/v1/profiles?select=username,id&username=eq."+encodeURIComponent(loginValue)+"&limit=1",{headers:{apikey:SUPABASE_KEY}}).then(r=>r.json());if(!rows?.[0])throw new Error("Username not found. Try your email instead.");throw new Error("Username login needs the account email. Use your email to log in.")}const {data,error}=await sb.auth.signInWithPassword({email,password:pass});if(error)throw error;session=data.session;$("auth").classList.remove("open");await loadManga();render()}else{const username=$("aUser").value.trim();const repeat=$("aPass2").value;if(!username)throw new Error("Enter a username.");if(pass!==repeat)throw new Error("Passwords do not match.");const {data,error}=await sb.auth.signUp({email:loginValue,password:pass,options:{data:{username},emailRedirectTo:"https://what839.github.io/mymanga/verification.html"}});if(error)throw error;if(!data.session){msg("Account created. Check your email to verify it, then log in.");return}session=data.session;await saveUsername(username);$("auth").classList.remove("open");await loadManga();render()}}catch(e){msg(e.message)}}
 function setAuthMode(mode){authMode=mode;const signup=mode==="signup";$("authSub").textContent=signup?"Create an account to sync your manga library":"Log in to sync your manga library";$("authBtn").textContent=signup?"Create Account":"Log In";$("switchAuth").textContent=signup?"Already have an account? Log in":"Create an account";$("loginLabel").textContent=signup?"Email":"Username or email";$("aEmail").placeholder=signup?"Email":"Username or email";$("userLabel").style.display=signup?"block":"none";$("aUser").style.display=signup?"block":"none";$("repeatWrap").style.display=signup?"block":"none";$("forgot").style.display=signup?"none":"block";$("aPass").autocomplete=signup?"new-password":"current-password";msg("")}
-$("authBtn").onclick=doAuth;$("switchAuth").onclick=()=>setAuthMode(authMode==="login"?"signup":"login");$("forgot").onclick=()=>location.href="https://what839.github.io/mymanga/forgot-password.html";$("saveAdd").onclick=saveAdd;$("cancelAdd").onclick=closeAdd;$("saveEdit").onclick=saveEdit;$("cancelEdit").onclick=()=>$("editModal").classList.remove("open");$("fab").onclick=openAdd;$("navAdd").onclick=openAdd;$("search").oninput=render;document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");active=b.dataset.s;render()});document.querySelectorAll(".nav[data-page]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");page=b.dataset.page;render()});$("sortBtn").onclick=()=>{items.reverse();render()};$("filterBtn").onclick=()=>{active=active==="Favorites"?"All":"Favorites";render()};$("notifyBtn").onclick=()=>$("updates").classList.toggle("open");$("closeUpdates").onclick=()=>$("updates").classList.remove("open");
+$("authBtn").onclick=doAuth;$("switchAuth").onclick=()=>setAuthMode(authMode==="login"?"signup":"login");$("forgot").onclick=()=>location.href="https://what839.github.io/mymanga/forgot-password.html";
+$("chooseGallery")?.addEventListener("click",()=>$("mCover").click());
+$("takePhoto")?.addEventListener("click",()=>$("mCamera").click());
+$("mCamera")?.addEventListener("change",e=>{
+  const f=e.target.files?.[0];
+  if(f){
+    const dt=new DataTransfer(); dt.items.add(f); $("mCover").files=dt.files;
+    $("mCover").dispatchEvent(new Event("change",{bubbles:true}));
+  }
+});
+$("mCover")?.addEventListener("change",e=>{
+  const f=e.target.files?.[0];
+  if(f) $("chooseGallery").textContent=f.name;
+});
+$("saveAdd").onclick=saveAdd;$("cancelAdd").onclick=closeAdd;$("saveEdit").onclick=saveEdit;$("cancelEdit").onclick=()=>$("editModal").classList.remove("open");$("fab").onclick=openAdd;$("navAdd").onclick=openAdd;$("search").oninput=render;document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");active=b.dataset.s;render()});document.querySelectorAll(".nav[data-page]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");page=b.dataset.page;render()});$("sortBtn").onclick=()=>{items.reverse();render()};$("filterBtn").onclick=()=>{active=active==="Favorites"?"All":"Favorites";render()};$("notifyBtn").onclick=()=>$("updates").classList.toggle("open");$("closeUpdates").onclick=()=>$("updates").classList.remove("open");
 document.querySelectorAll(".pwEye").forEach(b=>b.onclick=()=>{const i=$(b.dataset.target);i.type=i.type==="password"?"text":"password"});
-async function boot(){try{const {data}=await sb.auth.getSession();session=data.session;if(session){$("auth").classList.remove("open");await loadManga();render()}else $("auth").classList.add("open")}catch(e){console.error(e)}}
+async function boot(){try{if(location.hash.startsWith("#shared=")&&renderSharedLibrary())return;const {data}=await sb.auth.getSession();session=data.session;if(session){$("auth").classList.remove("open");await loadManga();render()}else $("auth").classList.add("open")}catch(e){console.error(e)}}
 sb.auth.onAuthStateChange((event,s)=>{session=s;if(s){$("auth").classList.remove("open");loadManga()}else if(event==="SIGNED_OUT")$("auth").classList.add("open")});
 applyAccent(localStorage.getItem("accent")||"#70acf4");applyTheme(localStorage.getItem("theme")||"light");boot();
+
+function encodeSharedLibrary(list){
+  const data=list.map(x=>({
+    name:x.name||"",
+    status:x.status||"",
+    chapter:x.chapter||"0",
+    link:x.link||"",
+    description:x.description||"",
+    favorite:!!x.favorite
+  }));
+  const raw=JSON.stringify(data);
+  const bytes=new TextEncoder().encode(raw);
+  let bin=""; for(const b of bytes) bin+=String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function decodeSharedLibrary(token){
+  try{
+    const b64=token.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((token.length+3)%4);
+    const bin=atob(b64); const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }catch(e){return null}
+}
+function renderSharedLibrary(){
+  const token=new URLSearchParams(location.hash.slice(1)).get("shared");
+  if(!token)return false;
+  const data=decodeSharedLibrary(token);
+  if(!data)return false;
+  $("auth").classList.remove("open");
+  $("view").innerHTML=`<div class="sectionTitle">Shared Library</div>
+    <div class="statBox" style="margin-bottom:12px">This is a shared copy of a manga list.</div>
+    <div class="grid">${data.map(x=>`<article class="card">
+      <div style="height:150px;border-radius:9px;background:var(--a2);display:flex;align-items:center;justify-content:center;font-size:38px;color:var(--a)">▤</div>
+      <div class="title">${esc(x.name)}</div>
+      <div class="status">${esc(x.status)}</div>
+      <div class="meta">Chapter: ${esc(x.chapter)}</div>
+      ${x.link?`<a class="linkBtn" href="${esc(x.link)}" target="_blank" rel="noopener">↗</a>`:""}
+      ${x.description?`<div class="desc">${esc(x.description)}</div>`:""}
+    </article>`).join("")}</div>`;
+  document.querySelectorAll(".nav").forEach(n=>n.classList.remove("active"));
+  return true;
+}
+async function shareLibrary(){
+  if(!items.length){alert("Your library is empty.");return}
+  const token=encodeSharedLibrary(items);
+  const url=location.origin+location.pathname+"#shared="+token;
+  try{
+    if(navigator.share){
+      await navigator.share({title:"My Manga Library",text:"My Manga Library",url});
+    }else{
+      await navigator.clipboard.writeText(url);
+      alert("Library link copied!");
+    }
+  }catch(e){
+    if(e?.name!=="AbortError"){
+      try{await navigator.clipboard.writeText(url);alert("Library link copied!")}
+      catch(_){prompt("Copy this library link:",url)}
+    }
+  }
+}
 </script></body></html>
 <script>
 /* Keep legacy "plan to read" records under the single Want to Read status. */
@@ -111,4 +259,18 @@ document.addEventListener("DOMContentLoaded",()=>{
     });
   });
 });
+</script>
+
+<script>
+/* Normalize old status labels without adding duplicate tabs/options. */
+(function(){
+  const normalize = v => {
+    if(!v) return v;
+    if(/plan\s*to\s*read/i.test(v) || /want[_-]?to[_-]?read/i.test(v)) return "Want to Read";
+    if(/^on\s*hold$/i.test(v)) return "Want to Read";
+    return v;
+  };
+  const oldRender = window.renderLibrary;
+  window.normalizeMangaStatus = normalize;
+})();
 </script>
