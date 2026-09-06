@@ -276,102 +276,33 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 
 <style>
-/* ===== Lightweight profile/search — safe test UI ===== */
-.mmSocialPage{padding:16px;max-width:760px;margin:0 auto}
-.mmSocialCard{background:var(--card,#fff);border:1px solid rgba(120,130,145,.18);border-radius:18px;padding:16px;margin:12px 0}
-.mmSocialSearch{display:flex;gap:8px}.mmSocialSearch input{flex:1;min-width:0}
-.mmSocialSearch button{width:auto;padding:0 16px}
-.mmPerson{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(120,130,145,.14)}
-.mmAvatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#eef2f6;flex:none}
-.mmAvatar img{width:100%;height:100%;object-fit:cover}
-.mmPersonInfo{flex:1;min-width:0}.mmPersonInfo strong{display:block}.mmPersonInfo span{opacity:.65}
-.mmStatus{padding:12px;border-radius:12px;background:rgba(120,130,145,.08);margin-top:10px}
+.mm-search-launcher{position:fixed;right:16px;top:16px;z-index:900;border:0;border-radius:12px;padding:9px 13px;cursor:pointer;font-weight:600}
+.mm-search-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:80px 14px 20px}
+.mm-search-box{width:min(620px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:20px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.mm-search-row{display:flex;gap:8px}.mm-search-row input{flex:1;min-width:0}.mm-search-row button{width:auto;padding:0 15px}
+.mm-user{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eee}
+.mm-user-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#eef1f5;flex:none}
+.mm-user-avatar img{width:100%;height:100%;object-fit:cover}.mm-user-info{flex:1;min-width:0}.mm-user-info small{opacity:.6}
+.mm-profile-books{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
+.mm-profile-book img{width:100%;aspect-ratio:.72;object-fit:cover;border-radius:10px}
+.mm-profile-book strong{display:block;font-size:12px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 <script>
 (function(){
-  const qs=s=>document.querySelector(s);
-  const esc2=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  async function mmApi(path, opts={}){
-    if(typeof api==="function") return api(path,opts);
-    if(typeof supabase==="undefined") throw new Error("Supabase client is unavailable.");
-    const base=window.SUPABASE_URL||window.supabaseUrl;
-    const key=window.SUPABASE_ANON_KEY||window.supabaseAnonKey;
-    if(!base||!key) throw new Error("Supabase configuration is unavailable.");
-    const r=await fetch(base+"/rest/v1/"+path,{
-      ...opts,headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",...(opts.headers||{})}
-    });
-    if(!r.ok) throw new Error(await r.text());
-    return r.status===204?null:r.json();
-  }
-
-  window.mmShowSocialHome=function(){
-    const root=qs("#app")||qs("main")||document.body;
-    root.innerHTML=`<div class="mmSocialPage">
-      <div class="mmSocialCard">
-        <h2 style="margin-top:0">Find Users</h2>
-        <div class="mmSocialSearch">
-          <input id="mmUserSearch" placeholder="Search username">
-          <button id="mmSearchBtn" type="button">Search</button>
-        </div>
-        <div id="mmSearchStatus" class="mmStatus" style="display:none"></div>
-        <div id="mmSearchResults"></div>
-      </div>
-    </div>`;
-    const input=qs("#mmUserSearch"), btn=qs("#mmSearchBtn");
-    async function run(){
-      const q=input.value.trim(), out=qs("#mmSearchResults"), st=qs("#mmSearchStatus");
-      if(!q){st.style.display="block";st.textContent="Enter a username to search.";out.innerHTML="";return}
-      st.style.display="none";out.innerHTML="";
-      try{
-        const rows=await mmApi("profiles?select=id,username,display_name,bio,avatar_url,is_public&username=ilike."+encodeURIComponent("%"+q+"%")+"&limit=25");
-        const list=(rows||[]).filter(x=>x.is_public!==false);
-        out.innerHTML=list.length?list.map(p=>`
-          <div class="mmPerson">
-            <div class="mmAvatar">${p.avatar_url?`<img src="${esc2(p.avatar_url)}" alt="">`:esc2((p.display_name||p.username||"?").slice(0,1).toUpperCase())}</div>
-            <div class="mmPersonInfo"><strong>${esc2(p.display_name||p.username||"User")}</strong><span>@${esc2(p.username||"")}</span></div>
-            <button type="button" onclick="mmOpenPublicProfile('${esc2(p.id)}')">View</button>
-          </div>`).join(""):"<div class='mmStatus'>No public users found.</div>";
-      }catch(e){
-        console.error(e);
-        st.style.display="block";
-        st.textContent="Profile search isn't connected yet. Your existing library is safe. Run the Profile/Search SQL only after this test page is working.";
-      }
-    }
-    btn.onclick=run;
-    input.onkeydown=e=>{if(e.key==="Enter")run()};
-  };
-
-  window.mmOpenPublicProfile=async function(id){
-    try{
-      const rows=await mmApi("profiles?select=id,username,display_name,bio,avatar_url,is_public&id=eq."+encodeURIComponent(id)+"&limit=1");
-      const p=rows?.[0];
-      if(!p){alert("User not found.");return}
-      if(p.is_public===false){alert("This profile is private.");return}
-      const root=qs("#app")||qs("main")||document.body;
-      root.innerHTML=`<div class="mmSocialPage">
-        <button type="button" onclick="mmShowSocialHome()">Back</button>
-        <div class="mmSocialCard">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div class="mmAvatar">${p.avatar_url?`<img src="${esc2(p.avatar_url)}" alt="">`:esc2((p.display_name||p.username||"?").slice(0,1).toUpperCase())}</div>
-            <div><h2 style="margin:0">${esc2(p.display_name||p.username||"User")}</h2><div style="opacity:.65">@${esc2(p.username||"")}</div></div>
-          </div>
-          <p>${esc2(p.bio||"")}</p>
-          <div id="mmPublicLibrary" class="mmStatus">Loading library…</div>
-        </div>
-      </div>`;
-      // Only query manga after the profile itself works.
-      try{
-        const books=await mmApi("manga?select=*&user_id=eq."+encodeURIComponent(id)+"&order=created_at.desc");
-        const box=qs("#mmPublicLibrary");
-        box.className="";
-        box.innerHTML=books?.length?books.map(b=>`<div class="mmPerson"><div style="flex:1"><strong>${esc2(b.title||b.name||"Manga")}</strong><div style="opacity:.65">${esc2(b.status||"")}</div></div></div>`).join(""):"<div class='mmStatus'>No public manga listed.</div>";
-      }catch(e){
-        qs("#mmPublicLibrary").textContent="The profile works, but the manga table needs to be connected to this user's library.";
-      }
-    }catch(e){alert("Couldn't open that profile.");}
-  };
-
-  // Expose a safe launcher without changing the existing four main tabs.
-  window.mmProfileSearchTest=function(){mmShowSocialHome()};
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function req(path,opts={}){
+ if(typeof api==="function")return api(path,opts);
+ throw new Error("The app API is unavailable");
+}
+window.openUserSearch=function(){
+ document.querySelector(".mm-search-overlay")?.remove();
+ const o=document.createElement("div");o.className="mm-search-overlay";
+ o.innerHTML=`<div class="mm-search-box"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Search Users</h2><button id="mmClose">Close</button></div><p style="opacity:.65">Find a public manga library by username.</p><div class="mm-search-row"><input id="mmQ" placeholder="Username"><button id="mmGo">Search</button></div><div id="mmResults"></div></div>`;
+ document.body.appendChild(o);o.querySelector("#mmClose").onclick=()=>o.remove();
+ const run=async()=>{const q=o.querySelector("#mmQ").value.trim(),out=o.querySelector("#mmResults");if(!q){out.textContent="Enter a username.";return}out.textContent="Searching…";try{const rows=await req("profiles?select=id,username,display_name,bio,avatar_url,is_public&username=ilike."+encodeURIComponent("%"+q+"%")+"&limit=25");const u=(rows||[]).filter(x=>x.is_public!==false);out.innerHTML=u.length?u.map(x=>`<div class="mm-user"><div class="mm-user-avatar">${x.avatar_url?`<img src="${esc(x.avatar_url)}">`:esc((x.display_name||x.username||"?")[0].toUpperCase())}</div><div class="mm-user-info"><strong>${esc(x.display_name||x.username)}</strong><br><small>@${esc(x.username)}</small></div><button data-p="${esc(x.id)}">View</button></div>`).join(""):"<p style='opacity:.6'>No public users found.</p>"}catch(e){console.error(e);out.innerHTML="<p>Profile search isn't connected yet. Do not run any SQL again.</p>"}};
+ o.querySelector("#mmGo").onclick=run;o.querySelector("#mmQ").onkeydown=e=>{if(e.key==="Enter")run()};o.addEventListener("click",e=>{const b=e.target.closest("[data-p]");if(b)openProfile(b.dataset.p,o)});
+};
+async function openProfile(id,o){const box=o.querySelector(".mm-search-box");box.innerHTML=`<button id="mmBack">Back</button><div id="mmProfile">Loading…</div>`;box.querySelector("#mmBack").onclick=()=>{o.remove();openUserSearch()};try{const r=await req("profiles?select=id,username,display_name,bio,avatar_url,is_public&id=eq."+encodeURIComponent(id)+"&limit=1"),p=r?.[0];if(!p||p.is_public===false){box.querySelector("#mmProfile").textContent="This profile is private.";return}const books=await req("manga?select=*&user_id=eq."+encodeURIComponent(id)+"&order=created_at.desc");box.querySelector("#mmProfile").innerHTML=`<div style="display:flex;gap:12px;align-items:center;margin-top:12px"><div class="mm-user-avatar">${p.avatar_url?`<img src="${esc(p.avatar_url)}">`:esc((p.display_name||p.username||"?")[0].toUpperCase())}</div><div><h2 style="margin:0">${esc(p.display_name||p.username)}</h2><div style="opacity:.6">@${esc(p.username)}</div></div></div>${p.bio?`<p>${esc(p.bio)}</p>`:""}<h3>Manga Library</h3><div class="mm-profile-books">${(books||[]).map(b=>`<div class="mm-profile-book">${b.cover_url?`<img src="${esc(b.cover_url)}">`:""}<strong>${esc(b.title||b.name||"Manga")}</strong></div>`).join("")||"<p>No manga listed.</p>"}</div>`}catch(e){console.error(e);box.querySelector("#mmProfile").textContent="Couldn't load this profile yet."}}
+const add=()=>{if(document.querySelector(".mm-search-launcher"))return;const b=document.createElement("button");b.className="mm-search-launcher";b.textContent="Search";b.onclick=openUserSearch;document.body.appendChild(b)};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",add):add();
 })();
 </script>
