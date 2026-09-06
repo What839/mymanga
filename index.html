@@ -61,7 +61,35 @@ input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px
 
 <div class="modal" id="editModal"><div class="sheet"><h2>Edit Manga</h2><input id="eId" type="hidden"><label>Manga Name</label><input id="eName"><div class="row"><div><label>Status</label><select id="eStatus"><option>Reading</option><option>Completed</option><option>On Hold</option><option>Dropped</option><option>Plan to Read</option></select></div><div><label>Chapter</label><input id="eChapter" type="number" min="0"></div></div><label>Link</label><input id="eLink" type="url"><label>Description</label><textarea id="eDesc"></textarea><div class="actions"><button class="btn cancel" id="cancelEdit">Cancel</button><button class="btn save" id="saveEdit">Save Changes</button></div></div></div>
 
-<div class="auth open" id="auth"><div class="authbox"><div class="authTitle">My Manga</div><div class="authSub" id="authSub">Log in to sync your manga library</div><label>Email</label><input id="aEmail" type="email" placeholder="you@example.com"><label>Password</label><div class="pwWrap"><input id="aPass" type="password" placeholder="Password"><button type="button" class="pwEye" data-target="aPass"></button></div><label>Password</label><div class="pwWrap"><input id="aPass2" type="password" placeholder="Repeat your password" autocomplete="new-password"><button type="button" class="pwEye" data-target="aPass2"></button></div><label id="aUserLabel" style="display:none">Username</label><input id="aUser" style="display:none" placeholder="Username"><div class="authMsg" id="authMsg"></div><button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button><button class="authSwitch" id="switchAuth">Create an account</button><button class="authSwitch" id="forgot">Forgot password?</button></div></div>
+<div class="auth open" id="auth"><div class="authbox">
+<div class="authTitle">My Manga</div>
+<div class="authSub" id="authSub">Log in to sync your manga library</div>
+
+<div id="signupOnly" style="display:none">
+<label>Email</label><input id="aEmail" type="email" placeholder="you@example.com" autocomplete="email">
+<label>Username</label><input id="aUser" placeholder="Username" autocomplete="username">
+</div>
+
+<div id="loginEmail">
+<label id="loginUserLabel">Username or email</label>
+<input id="aLogin" placeholder="Username or email" autocomplete="username">
+</div>
+
+<label>Password</label>
+<div class="pwWrap"><input id="aPass" type="password" placeholder="Password" autocomplete="current-password">
+<button type="button" class="pwEye" data-target="aPass" aria-label="Show password"><span class="eyeIcon"></span></button></div>
+
+<div id="repeatWrap" style="display:none">
+<label>Repeat password</label>
+<div class="pwWrap"><input id="aPass2" type="password" placeholder="Repeat your password" autocomplete="new-password">
+<button type="button" class="pwEye" data-target="aPass2" aria-label="Show password"><span class="eyeIcon"></span></button></div>
+</div>
+
+<div class="authMsg" id="authMsg"></div>
+<button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button>
+<button class="authSwitch" id="switchAuth">Create an account</button>
+<button class="authSwitch" id="forgot">Forgot password?</button>
+</div></div>div>
 
 <script>
 const SUPABASE_URL="https://anjwxsqcvhpzoillktmy.supabase.co";
@@ -236,36 +264,41 @@ async function saveEdit(){try{await api("manga?id=eq."+encodeURIComponent($("eId
 async function logout(){session=null;items=[];$("auth").classList.add("open");msg("");}
 async function doAuth(){
  try{
-  const email=$("aEmail").value.trim(),pass=$("aPass").value;
-  if(!email||!pass)throw new Error("Enter your email and password.");
-  if(authMode==="login"){const d=await auth("token?grant_type=password",{email,password:pass});session=d;$("auth").classList.remove("open");await loadProfile();await loadPeople();await loadManga()}
-  else{const repeat=$("aPass2")?.value||"";if(pass!==repeat){alert("Passwords do not match.");return}const d=await auth("signup",{email,password:pass,options:{emailRedirectTo:"https://what839.github.io/mymanga/"}});if(!d.session)throw new Error("Account created. Check your email to confirm it, then log in.");session=d;$("auth").classList.remove("open");await createProfile($("aUser").value.trim()||email.split("@")[0]);await loadProfile();await loadPeople();await loadManga()}
+  const pass=$("aPass").value;
+  if(authMode==="login"){
+   const login=$("aLogin").value.trim();
+   if(!login||!pass)throw new Error("Enter your username/email and password.");
+   let email=login;
+   if(!login.includes("@")){
+    const rows=await api("profiles?select=username,email&username=eq."+encodeURIComponent(login)+"&limit=1");
+    if(!rows?.[0]?.email)throw new Error("Username not found.");
+    email=rows[0].email;
+   }
+   const d=await auth("token?grant_type=password",{email,password:pass});
+   session=d;$("auth").classList.remove("open");await loadProfile();await loadPeople();await loadManga();
+  }else{
+   const email=$("aEmail").value.trim(), username=$("aUser").value.trim(), repeat=$("aPass2").value;
+   if(!email||!username||!pass||!repeat)throw new Error("Fill in all fields.");
+   if(pass!==repeat)throw new Error("Passwords do not match.");
+   const d=await auth("signup",{email,password:pass,options:{data:{username},emailRedirectTo:"https://what839.github.io/mymanga/verification.html"}});
+   // Profile is created after email confirmation when a session exists; metadata keeps username attached to the account.
+   if(!d.session){msg("Account created. Check your email to verify your account, then log in.");return}
+   session=d;await createProfile(username);$("auth").classList.remove("open");await loadProfile();await loadPeople();await loadManga();
+  }
  }catch(e){msg(e.message)}
 }
-function setAuthMode(mode){authMode=mode;$("authSub").textContent=mode==="login"?"Log in to sync your manga library":"Create an account to sync your manga library";$("authBtn").textContent=mode==="login"?"Log In":"Create Account";$("switchAuth").textContent=mode==="login"?"Create an account":"Already have an account? Log in";$("aUser").style.display=mode==="login"?"none":"block";$("aUserLabel").style.display=mode==="login"?"none":"block";$("forgot").style.display=mode==="login"?"block":"none";msg("")}
-$("authBtn").onclick=doAuth;$("switchAuth").onclick=()=>setAuthMode(authMode==="login"?"signup":"login");
-$("forgot").onclick=async()=>{const e=$("aEmail").value.trim();if(!e){msg("Enter your email first.");return}try{await auth("recover",{email:e,options:{redirect_to:"https://what839.github.io/mymanga/reset.html"}});msg("Password reset email sent.")}catch(x){msg(x.message)}};
-$("saveAdd").onclick=saveAdd;$("cancelAdd").onclick=closeAdd;$("saveEdit").onclick=saveEdit;$("cancelEdit").onclick=()=>$("editModal").classList.remove("open");$("fab").onclick=openAdd;$("navAdd").onclick=openAdd;$("search").oninput=render;
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");active=b.dataset.s;render()});
-document.querySelectorAll(".nav[data-page]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");page=b.dataset.page;render()});
-$("sortBtn").onclick=()=>{items.reverse();render()};$("filterBtn").onclick=()=>{active=active==="Favorites"?"All":"Favorites";render()};
-$("notifyBtn").onclick=()=>{$("updates").classList.toggle("open");showUpdates()};$("closeUpdates").onclick=()=>$("updates").classList.remove("open");
-$("checkUpdates").onclick=async()=>{await checkUpdates();showUpdates()};
-function showUpdates(){const l=$("updateList");l.innerHTML=updates.length?updates.map(u=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${esc(u.name)}</b><div style="color:var(--muted);margin-top:3px">New chapter: ${esc(u.chapter)}</div></div>`).join(""):"No new updates yet.";$("dot").style.display=updates.length?"inline":"none"}
-async function checkUpdates(){
- $("checkUpdates").textContent="Checking...";$("checkUpdates").disabled=true;
- // Only checks sources that explicitly expose a chapter number through the Comix API.
- // The APK remains usable if a source cannot be checked.
- for(const x of items){
-  try{
-   const u=new URL(x.link||"");if(!/comix\.to$/i.test(u.hostname))continue;
-   const parts=u.pathname.split("/").filter(Boolean),i=parts.indexOf("title"),slug=i>=0?parts[i+1]:null;if(!slug)continue;
-   const r=await fetch("https://comix-api.vercel.app/api/manga/"+encodeURIComponent(slug)+"/chapters?sfw=true&limit=1");if(!r.ok)continue;
-   const d=await r.json(),ch=(d.chapters||d.data||[])[0],latest=String(ch?.chapter_number??ch?.chapter??"");if(!latest)continue;
-   const old=String(x.chapter||"");if(old&&latest!==old&&!updates.some(a=>a.name===x.name&&a.chapter===latest))updates.unshift({name:x.name,chapter:latest});
-  }catch(e){}
- }
- localStorage.setItem("mymanga_updates",JSON.stringify(updates));$("checkUpdates").textContent="Check for updates";$("checkUpdates").disabled=false;showUpdates()
+function setAuthMode(mode){
+ authMode=mode;
+ const signup=mode==="signup";
+ $("authSub").textContent=signup?"Create your My Manga account":"Log in to sync your manga library";
+ $("signupOnly").style.display=signup?"block":"none";
+ $("loginEmail").style.display=signup?"none":"block";
+ $("repeatWrap").style.display=signup?"block":"none";
+ $("aPass").autocomplete=signup?"new-password":"current-password";
+ $("authBtn").textContent=signup?"Create account":"Log In";
+ $("switchAuth").textContent=signup?"Already have an account? Log in":"Create an account";
+ $("aLogin").value="";$("aPass").value="";if($("aPass2"))$("aPass2").value="";
+ msg("");
 }
 try{updates=JSON.parse(localStorage.getItem("mymanga_updates")||"[]")}catch(e){updates=[]}
 
