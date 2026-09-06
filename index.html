@@ -1,10 +1,9 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>My Manga</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>My Manga</title><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
 :root{--a:#70acf4;--a2:#e8f3ff;--bg:#fbfdff;--card:#fff;--text:#29486b;--muted:#7690ae;--line:#dcecff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Fredoka,system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,input,select,textarea{font:inherit}button{cursor:pointer}
 header{padding:17px 15px 9px;background:var(--card);position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
 .top{display:flex;align-items:center;justify-content:space-between}.brand{font-size:31px;font-weight:600;letter-spacing:-1px;color:var(--a)}
@@ -27,7 +26,6 @@ nav{position:fixed;left:10px;right:10px;bottom:10px;height:64px;border:1px solid
 
 .grid .card{padding:7px;border-radius:14px}.grid .cover{border-radius:9px}.grid .title{font-size:13px;margin:7px 2px 4px}.grid .status{font-size:10px;padding:4px 7px}.grid .meta{font-size:10px;margin:3px 2px}.grid .desc{font-size:10px;margin:5px 2px;-webkit-line-clamp:2}.grid .linkBtn{width:30px;height:30px;font-size:16px;margin:5px 0 3px 2px}.grid .delete{font-size:10px;padding:6px 8px;margin-top:4px}.grid .heart{width:28px;height:28px;right:11px;top:11px;font-size:17px}@media(max-width:620px){.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.grid .card{padding:5px}.grid .title{font-size:11px}.grid .status{font-size:9px}.grid .meta,.grid .desc{font-size:9px}.grid .delete{font-size:9px;padding:5px 6px}}@media(max-width:340px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-.panel{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 28px));max-height:75vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;z-index:30;box-shadow:0 18px 60px #244b7026}.panel.open{display:block}.panel:before{content:"";position:fixed;inset:-100vh;z-index:-1;background:#183b684d}.bellIcon{display:inline-block;width:17px;height:17px;border:2px solid currentColor;border-radius:10px 10px 6px 6px;position:relative;vertical-align:middle}.bellIcon:before{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);width:6px;height:3px;border-radius:0 0 5px 5px;background:currentColor}.bellIcon:after{content:"";position:absolute;left:50%;top:-4px;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:currentColor}
 
 /* ===== Final compact proportional 4-column library ===== */
 .libraryGrid,.mangaGrid,.booksGrid{
@@ -130,25 +128,24 @@ nav{position:fixed;left:10px;right:10px;bottom:10px;height:64px;border:1px solid
 .uploadChoices{display:flex;gap:8px}
 .uploadChoices .fileBox{flex:1;text-align:center;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:11px;color:var(--muted);font-weight:600;cursor:pointer}
 </style></head><body>
-<header><div class="top"><div class="brand">My Manga</div><div class="tools"><button class="tool" id="sortBtn">↕ Sort</button><button class="tool notifyTool" id="notifyBtn" title="Notifications"><span class="bellIcon" aria-label="Notifications"></span><span id="dot" style="display:none;color:var(--a);margin-left:3px">●</span></button><button class="tool" id="filterBtn">♡</button></div></div>
+<header><div class="top"><div class="brand">My Manga</div><div class="tools"><button class="tool" id="sortBtn">↕ Sort</button><button class="tool" id="filterBtn">♡</button></div></div>
 <input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
 <main><div id="verifyBanner" class="verifyBanner"></div><div id="view"></div></main>
 <button class="fab" id="fab">+</button>
 <nav><button class="nav active" data-page="library"><span class="navIcon">▤</span>My Library</button><button class="nav" id="navAdd"><span class="navIcon">＋</span>Add</button><button class="nav" data-page="stats"><span class="navIcon">▥</span>Stats</button><button class="nav" data-page="settings"><span class="navIcon">⚙</span>Settings</button></nav>
-<div class="panel" id="updates"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:20px">Manga Updates</strong><button class="tool" id="closeUpdates">×</button></div><div id="updateList" style="margin-top:10px;color:var(--muted)">No updates yet.</div><button class="btn save" id="checkUpdates" style="width:100%;margin-top:12px">Check for updates</button></div>
 <div class="modal" id="addModal"><div class="sheet"><h2>Add Manga</h2><label>Manga Name</label><input id="mName" placeholder="Manga name"><div class="row"><div><label>Status</label><select id="mStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option></select></div><div><label>Chapter</label><input id="mChapter" type="number" min="0" value="0"></div></div><label>Link</label><input id="mLink" type="url" placeholder="https://..."><label>Description</label><textarea id="mDesc" placeholder="Description..."></textarea><label>Cover Picture</label>
 <div class="uploadChoices">
   <button type="button" class="fileBox" id="chooseGallery">Choose from Gallery</button>
   <button type="button" class="fileBox" id="takePhoto">Take Photo</button>
 </div>
 <input id="mCover" type="file" accept="image/*" style="display:none">
-<input id="mCamera" type="file" accept="image/*" capture="environment" style="display:none"><img id="mPreview" class="preview"><label>Favorite</label><select id="mFav"><option value="no">No</option><option value="yes">Yes</option></select><div class="actions"><button class="btn cancel" id="cancelAdd">Cancel</button><button class="btn save" id="saveAdd">Add Manga</button></div></div></div>
+<input id="mCamera" type="file" accept="image/*" capture="environment" style="display:none"><img id="mPreview" class="preview" loading="lazy" decoding="async"><label>Favorite</label><select id="mFav"><option value="no">No</option><option value="yes">Yes</option></select><div class="actions"><button class="btn cancel" id="cancelAdd">Cancel</button><button class="btn save" id="saveAdd">Add Manga</button></div></div></div>
 <div class="modal" id="editModal"><div class="sheet"><h2>Edit Manga</h2><input id="eId" type="hidden"><label>Manga Name</label><input id="eName"><div class="row"><div><label>Status</label><select id="eStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option></select></div><div><label>Chapter</label><input id="eChapter" type="number" min="0"></div></div><label>Link</label><input id="eLink" type="url"><label>Description</label><textarea id="eDesc"></textarea><div class="actions"><button class="btn cancel" id="cancelEdit">Cancel</button><button class="btn save" id="saveEdit">Save Changes</button></div></div></div>
 <div class="auth open" id="auth"><div class="authbox"><div class="authTitle">My Manga</div><div class="authSub" id="authSub">Log in to sync your manga library</div><label id="loginLabel">Username or email</label><input id="aEmail" placeholder="Username or email" autocomplete="username"><label id="userLabel" style="display:none">Username</label><input id="aUser" style="display:none" placeholder="Username" autocomplete="username"><label>Password</label><div class="pwWrap"><input id="aPass" type="password" placeholder="Password" autocomplete="current-password"><button type="button" class="pwEye" data-target="aPass"><span class="eyeIcon"></span></button></div><div id="repeatWrap" style="display:none"><label>Repeat password</label><div class="pwWrap"><input id="aPass2" type="password" placeholder="Repeat your password" autocomplete="new-password"><button type="button" class="pwEye" data-target="aPass2"><span class="eyeIcon"></span></button></div></div><div class="authMsg" id="authMsg"></div><button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button><button class="authSwitch" id="switchAuth">Create an account</button><button class="authSwitch" id="forgot">Forgot password?</button></div></div>
 <script>
 const SUPABASE_URL="https://anjwxsqcvhpzoillktmy.supabase.co"; const SUPABASE_KEY="sb_publishable_pas11tpmdKbIMk8NyOTCRw_O0QAUPnt";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-let session=null,items=[],active="All",page="library",authMode="login",updates=[];
+let session=null,items=[],active="All",page="library",authMode="login";
 const $=id=>document.getElementById(id); function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"}[c]))}
 function msg(t){$("authMsg").textContent=t}
 async function api(path,opts={}){const h=Object.assign({"apikey":SUPABASE_KEY,"Content-Type":"application/json"},opts.headers||{});if(session?.access_token)h.Authorization="Bearer "+session.access_token;const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{...opts,headers:h});const text=await r.text();let d=null;try{d=text?JSON.parse(text):null}catch(e){}if(!r.ok)throw new Error(d?.message||d?.hint||text||"Request failed");return d}
@@ -156,69 +153,12 @@ async function loadManga(){items=await api("manga?select=*&order=created_at.desc
 async function saveUsername(username){if(!session?.user?.id||!username)return;try{await api("profiles",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({id:session.user.id,username})})}catch(e){}}
 async function getUsernameByLogin(value){if(value.includes("@"))return value;const rows=await api("profiles?select=id,username&username=eq."+encodeURIComponent(value)+"&limit=1");if(!rows?.[0])throw new Error("Username not found. Try your email instead.");const uid=rows[0].id;const u=await api("profiles?select=username&username=eq."+encodeURIComponent(value)+"&limit=1");return u?.[0]?.username||value}
 function render(){const v=$("view");if(page==="stats")return renderStats(v);if(page==="settings")return renderSettings(v);return renderLibrary(v)}
-function renderLibrary(v){let q=$("search").value.toLowerCase();let shown=items.filter(x=>active==="All"||x.status===active||(active==="Favorites"&&x.favorite)).filter(x=>x.name.toLowerCase().includes(q));let html='<div class="grid">';shown.forEach(x=>{html+=`<article class="card"><img class="cover" src="${esc(x.cover_url||"")}" alt=""><button class="heart" onclick="toggleFav('${x.id}')">${x.favorite?"♥":"♡"}</button><div class="title">${esc(x.name)}</div><div class="status">${esc(x.status||"")}</div><div class="meta">Chapter: ${esc(x.chapter||"0")}</div>${x.link?`<a class="linkBtn" href="${esc(x.link)}" target="_blank" rel="noopener">↗</a>`:""}${x.description?`<div class="desc">${esc(x.description)}</div>`:""}<button class="delete" onclick="editManga('${x.id}')">Edit</button> <button class="delete" onclick="deleteManga('${x.id}')">Delete</button></article>`});html+='<button class="card addCard" onclick="openAdd()"><span class="plus">+</span><span class="addText">Add Manga</span></button></div>';v.innerHTML=html}
+function renderLibrary(v){let q=$("search").value.toLowerCase();let shown=items.filter(x=>active==="All"||x.status===active||(active==="Favorites"&&x.favorite)).filter(x=>x.name.toLowerCase().includes(q));let html='<div class="grid">';shown.forEach(x=>{html+=`<article class="card"><img class="cover" loading="lazy" decoding="async" src="${esc(x.cover_url||"")}" alt=""><button class="heart" onclick="toggleFav('${x.id}')">${x.favorite?"♥":"♡"}</button><div class="title">${esc(x.name)}</div><div class="status">${esc(x.status||"")}</div><div class="meta">Chapter: ${esc(x.chapter||"0")}</div>${x.link?`<a class="linkBtn" href="${esc(x.link)}" target="_blank" rel="noopener">↗</a>`:""}${x.description?`<div class="desc">${esc(x.description)}</div>`:""}<button class="delete" onclick="editManga('${x.id}')">Edit</button> <button class="delete" onclick="deleteManga('${x.id}')">Delete</button></article>`});html+='<button class="card addCard" onclick="openAdd()"><span class="plus">+</span><span class="addText">Add Manga</span></button></div>';v.innerHTML=html}
 function renderStats(v){const total=items.length,read=items.filter(x=>x.status==="Reading").length,done=items.filter(x=>x.status==="Completed").length,fav=items.filter(x=>x.favorite).length;v.innerHTML=`<div class="sectionTitle">Statistics</div><div class="statBox"><div class="statNum">${total}</div>Total manga</div><div class="statBox"><div class="statNum">${read}</div>Reading</div><div class="statBox"><div class="statNum">${done}</div>Completed</div><div class="statBox"><div class="statNum">${fav}</div>Favorites</div>`}
-async function renderSettings(v){
-  const verified=!!session?.user?.email_confirmed_at;
-  let username=session?.user?.user_metadata?.username||"";
-  try{const p=await api("profiles?select=username&id=eq."+encodeURIComponent(session.user.id));username=p?.[0]?.username||username}catch(e){}
-  v.innerHTML=`<div class="sectionTitle">Settings</div>
-  <div class="statBox">
-    <div class="settingRow"><span>Username</span><span class="userPill">@${esc(username||"not set")}</span></div>
-    <div class="settingRow"><span>Email</span><span class="userPill">${esc(session?.user?.email||"")}</span></div>
-    <div class="settingRow"><span>Email status</span><span class="userPill" style="${verified?"":"color:#b46b2c;background:#fff4e7"}">${verified?"Verified":"Not verified"}</span></div>
-  </div>
-  <div class="statBox">
-    <h3 style="margin:0 0 12px">Account</h3>
-    <label>Change username</label>
-    <div style="display:flex;gap:8px;align-items:stretch"><input id="newUsername" placeholder="New username" value="${esc(username)}" autocomplete="username"><button class="btn save" id="saveUsernameBtn" type="button" style="width:auto;padding:0 16px">Save</button></div>
-    <div id="usernameMsg" class="authMsg"></div>
-    <div style="height:1px;background:var(--line);margin:16px 0"></div>
-    <h3 style="margin:0 0 12px">Change password</h3>
-    <label>Current password</label>
-    <div class="pwWrap"><input id="currentPassword" type="password" placeholder="Current password" autocomplete="current-password"><button type="button" class="pwEye" data-target="currentPassword"><span class="eyeIcon"></span></button></div>
-    <label>New password</label>
-    <div class="pwWrap"><input id="newPassword" type="password" placeholder="New password" autocomplete="new-password"><button type="button" class="pwEye" data-target="newPassword"><span class="eyeIcon"></span></button></div>
-    <label>Repeat password</label>
-    <div class="pwWrap"><input id="repeatNewPassword" type="password" placeholder="Repeat password" autocomplete="new-password"><button type="button" class="pwEye" data-target="repeatNewPassword"><span class="eyeIcon"></span></button></div>
-    <div id="passwordMsg" class="authMsg"></div>
-    <button class="btn save" id="changePasswordBtn" type="button" style="width:100%;margin-top:8px">Change password</button>
-  </div>
-  <div class="statBox"><div class="settingRow"><span>Appearance</span><select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingRow"><span>Accent color</span><input id="accent" class="colorInput" type="color" value="${localStorage.getItem("accent")||"#70acf4"}"></div><div style="padding-top:16px"><button class="logout" id="logout">Log out</button></div></div>`;
-  $("theme").value=localStorage.getItem("theme")||"light";applyTheme($("theme").value);$("theme").onchange=e=>{localStorage.setItem("theme",e.target.value);applyTheme(e.target.value)};$("accent").onchange=e=>{localStorage.setItem("accent",e.target.value);applyAccent(e.target.value)};$("logout").onclick=logout;
-  document.querySelectorAll(".pwEye").forEach(b=>b.onclick=()=>{const i=$(b.dataset.target);i.type=i.type==="password"?"text":"password"});
-  $("saveUsernameBtn").onclick=async()=>{
-    const n=$("newUsername").value.trim().toLowerCase(),m=$("usernameMsg");
-    m.textContent="";
-    if(!/^[a-z0-9_]{3,20}$/.test(n)){m.textContent="Username must be 3–20 characters using letters, numbers, or _.";return}
-    try{
-      const existing=await api("profiles?select=id&username=eq."+encodeURIComponent(n)+"&limit=1");
-      if(existing?.[0]&&existing[0].id!==session.user.id){m.textContent="That username is already taken.";return}
-      await api("profiles?id=eq."+encodeURIComponent(session.user.id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({username:n})});
-      await sb.auth.updateUser({data:{username:n}});
-      m.textContent="Username updated!";
-      await renderSettings(v);
-    }catch(e){m.textContent=e.message||"Couldn't change username."}
-  };
-  $("changePasswordBtn").onclick=async()=>{
-    const cur=$("currentPassword").value,n=$("newPassword").value,r=$("repeatNewPassword").value,m=$("passwordMsg");
-    m.textContent="";
-    if(!cur||!n||!r){m.textContent="Please fill in all password fields.";return}
-    if(n.length<6){m.textContent="New password must be at least 6 characters.";return}
-    if(n!==r){m.textContent="New passwords do not match.";return}
-    if(!session?.user?.email){m.textContent="Your email could not be found. Please log in again.";return}
-    const btn=$("changePasswordBtn");btn.disabled=true;btn.textContent="Changing…";
-    try{
-      const {error:verifyError}=await sb.auth.signInWithPassword({email:session.user.email,password:cur});
-      if(verifyError)throw new Error("Current password is incorrect.");
-      const {error}=await sb.auth.updateUser({password:n});
-      if(error)throw error;
-      m.textContent="Password changed successfully!";
-      $("currentPassword").value=$("newPassword").value=$("repeatNewPassword").value="";
-    }catch(e){m.textContent=e.message||"Couldn't change password."}
-    finally{btn.disabled=false;btn.textContent="Change password"}
-  };
-}
+async function renderSettings(v){const verified=!!session?.user?.email_confirmed_at;let username=session?.user?.user_metadata?.username||"";try{const p=await api("profiles?select=username&id=eq."+encodeURIComponent(session.user.id));username=p?.[0]?.username||username}catch(e){}v.innerHTML=`<div class="sectionTitle">Settings</div><div class="statBox"><div class="settingRow"><span>Username</span><span class="userPill">@${esc(username||"not set")}</span></div><div class="settingRow"><span>Email</span><span class="userPill">${esc(session?.user?.email||"")}</span></div><div class="settingRow"><span>Email status</span><span class="userPill" style="${verified?"":"color:#b46b2c;background:#fff4e7"}">${verified?"Verified":"Not verified"}</span></div></div><div class="statBox"><div class="settingRow"><span>Appearance</span><select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingRow"><span>Accent color</span><input id="accent" class="colorInput" type="color" value="${localStorage.getItem("accent")||"#70acf4"}"></div><div style="padding-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn save" id="shareLibrary" type="button">Share My Library</button>
+<button class="logout" id="logout">Log out</button>
+</div></div>`;$("theme").value=localStorage.getItem("theme")||"light";applyTheme($("theme").value);$("theme").onchange=e=>{localStorage.setItem("theme",e.target.value);applyTheme(e.target.value)};$("accent").onchange=e=>{localStorage.setItem("accent",e.target.value);applyAccent(e.target.value)};$("logout").onclick=logout;$("shareLibrary").onclick=shareLibrary}
 function applyAccent(c){document.documentElement.style.setProperty("--a",c);document.documentElement.style.setProperty("--a2",hexToRgba(c,.13))}function hexToRgba(h,a){h=h.replace("#","");if(h.length!==6)return "rgba(112,172,244,.13)";let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return `rgba(${r},${g},${b},${a})`}function applyTheme(t){document.documentElement.style.setProperty("--bg",t==="dark"?"#101720":"#fbfdff");document.documentElement.style.setProperty("--card",t==="dark"?"#182330":"#fff");document.documentElement.style.setProperty("--text",t==="dark"?"#e7f1ff":"#29486b");document.documentElement.style.setProperty("--muted",t==="dark"?"#9db2c9":"#7690ae");document.documentElement.style.setProperty("--line",t==="dark"?"#2a3b4f":"#dcecff")}
 function openAdd(){$('addModal').classList.add('open')}function closeAdd(){$('addModal').classList.remove('open')}
 async function saveAdd(){const f=$("mCover").files[0],n=$("mName").value.trim();if(!n||!f){alert("Please enter a manga name and choose a cover picture.");return}const reader=new FileReader();reader.onload=async e=>{try{await api("manga",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({user_id:session.user.id,name:n,status:$("mStatus").value,chapter:$("mChapter").value||"0",link:$("mLink").value.trim(),description:$("mDesc").value.trim(),cover_url:e.target.result,favorite:$("mFav").value==="yes"})});closeAdd();await loadManga()}catch(err){alert(err.message)}};reader.readAsDataURL(f)}
@@ -240,7 +180,7 @@ $("mCover")?.addEventListener("change",e=>{
   const f=e.target.files?.[0];
   if(f) $("chooseGallery").textContent=f.name;
 });
-$("saveAdd").onclick=saveAdd;$("cancelAdd").onclick=closeAdd;$("saveEdit").onclick=saveEdit;$("cancelEdit").onclick=()=>$("editModal").classList.remove("open");$("fab").onclick=openAdd;$("navAdd").onclick=openAdd;$("search").oninput=render;document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");active=b.dataset.s;render()});document.querySelectorAll(".nav[data-page]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");page=b.dataset.page;render()});$("sortBtn").onclick=()=>{items.reverse();render()};$("filterBtn").onclick=()=>{active=active==="Favorites"?"All":"Favorites";render()};$("notifyBtn").onclick=()=>$("updates").classList.toggle("open");$("closeUpdates").onclick=()=>$("updates").classList.remove("open");
+$("saveAdd").onclick=saveAdd;$("cancelAdd").onclick=closeAdd;$("saveEdit").onclick=saveEdit;$("cancelEdit").onclick=()=>$("editModal").classList.remove("open");$("fab").onclick=openAdd;$("navAdd").onclick=openAdd;$("search").oninput=render;document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");active=b.dataset.s;render()});document.querySelectorAll(".nav[data-page]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");page=b.dataset.page;render()});$("sortBtn").onclick=()=>{items.reverse();render()};$("filterBtn").onclick=()=>{active=active==="Favorites"?"All":"Favorites";render()};
 document.querySelectorAll(".pwEye").forEach(b=>b.onclick=()=>{const i=$(b.dataset.target);i.type=i.type==="password"?"text":"password"});
 async function boot(){try{if(location.hash.startsWith("#shared=")&&renderSharedLibrary())return;const {data}=await sb.auth.getSession();session=data.session;if(session){$("auth").classList.remove("open");await loadManga();render()}else $("auth").classList.add("open")}catch(e){console.error(e)}}
 sb.auth.onAuthStateChange((event,s)=>{session=s;if(s){$("auth").classList.remove("open");loadManga()}else if(event==="SIGNED_OUT")$("auth").classList.add("open")});
@@ -331,5 +271,3 @@ document.addEventListener("DOMContentLoaded",()=>{
   window.normalizeMangaStatus = normalize;
 })();
 </script>
-
-
