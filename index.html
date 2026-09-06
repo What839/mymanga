@@ -134,7 +134,13 @@ nav{position:fixed;left:10px;right:10px;bottom:10px;height:64px;border:1px solid
 <input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
 <main><div id="verifyBanner" class="verifyBanner"></div><div id="view"></div></main>
 <button class="fab" id="fab">+</button>
-<nav><button class="nav active" data-page="library"><span class="navIcon">▤</span>My Library</button><button class="nav" id="navAdd"><span class="navIcon">＋</span>Add</button><button class="nav" data-page="stats"><span class="navIcon">▥</span>Stats</button><button class="nav" data-page="settings"><span class="navIcon">⚙</span>Settings</button></nav>
+<nav>
+<button class="nav active" data-page="library"><span class="navIcon">▤</span>My Library</button>
+<button class="nav" data-page="people"><span class="navIcon">⌕</span>Search</button>
+<button class="nav" id="navAdd"><span class="navIcon">＋</span>Add</button>
+<button class="nav" data-page="stats"><span class="navIcon">▥</span>Stats</button>
+<button class="nav" data-page="settings"><span class="navIcon">⚙</span>Settings</button>
+</nav>
 <div class="panel" id="updates"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:20px">Manga Updates</strong><button class="tool" id="closeUpdates">×</button></div><div id="updateList" style="margin-top:10px;color:var(--muted)">No updates yet.</div><button class="btn save" id="checkUpdates" style="width:100%;margin-top:12px">Check for updates</button></div>
 <div class="modal" id="addModal"><div class="sheet"><h2>Add Manga</h2><label>Manga Name</label><input id="mName" placeholder="Manga name"><div class="row"><div><label>Status</label><select id="mStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option></select></div><div><label>Chapter</label><input id="mChapter" type="number" min="0" value="0"></div></div><label>Link</label><input id="mLink" type="url" placeholder="https://..."><label>Description</label><textarea id="mDesc" placeholder="Description..."></textarea><label>Cover Picture</label>
 <div class="uploadChoices">
@@ -276,33 +282,46 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 
 <style>
-.mm-search-launcher{position:fixed;right:16px;top:16px;z-index:900;border:0;border-radius:12px;padding:9px 13px;cursor:pointer;font-weight:600}
-.mm-search-overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:80px 14px 20px}
-.mm-search-box{width:min(620px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:20px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.mm-search-row{display:flex;gap:8px}.mm-search-row input{flex:1;min-width:0}.mm-search-row button{width:auto;padding:0 15px}
-.mm-user{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eee}
-.mm-user-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#eef1f5;flex:none}
-.mm-user-avatar img{width:100%;height:100%;object-fit:cover}.mm-user-info{flex:1;min-width:0}.mm-user-info small{opacity:.6}
-.mm-profile-books{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
-.mm-profile-book img{width:100%;aspect-ratio:.72;object-fit:cover;border-radius:10px}
-.mm-profile-book strong{display:block;font-size:12px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mmPeoplePage{max-width:900px;margin:0 auto;padding:4px 0 90px}
+.mmSearchRow{display:flex;gap:8px;margin:12px 0 16px}.mmSearchRow input{flex:1}.mmSearchRow button{width:auto;padding:0 18px}
+.mmPeopleResults{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mmPersonCard{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:13px;display:flex;align-items:center;gap:12px}
+.mmAvatar{width:58px;height:58px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--a2);color:var(--a);font-size:24px;flex:none}.mmAvatar img{width:100%;height:100%;object-fit:cover}
+.mmPersonInfo{min-width:0;flex:1}.mmPersonInfo strong{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mmPersonInfo span{font-size:13px;color:var(--muted)}.mmPersonInfo p{font-size:12px;color:var(--muted);margin:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mmViewBtn,.mmBackBtn{border:1px solid var(--line);background:var(--a2);color:var(--a);border-radius:11px;padding:9px 11px;font-weight:600}
+.mmProfilePage{min-height:calc(100vh - 90px);padding-bottom:90px}.mmBackBtn{margin-bottom:10px}
+.mmProfileHero{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-bottom:14px}
+.mmProfileThumb{width:100%;height:150px;object-fit:cover;background:var(--a2);display:block}.mmProfileHead{padding:0 18px 18px;text-align:center}
+.mmProfileAvatar{width:94px;height:94px;border-radius:50%;border:5px solid var(--card);margin:-47px auto 8px;overflow:hidden;display:grid;place-items:center;background:var(--a2);color:var(--a);font-size:32px}.mmProfileAvatar img{width:100%;height:100%;object-fit:cover}
+.mmProfileName{font-size:26px;font-weight:600}.mmProfileUsername{color:var(--muted);font-size:14px}.mmProfileBio{color:var(--muted);max-width:620px;margin:8px auto}
+.mmTags{display:flex;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:8px}.mmTag{padding:5px 9px;border-radius:999px;background:var(--a2);color:var(--a);font-size:12px}
+.mmStatusTabs{display:flex;gap:8px;overflow:auto;margin:12px 0}.mmStatusTab{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--a);border-radius:20px;padding:8px 13px;font-weight:600}.mmStatusTab.active{background:var(--a);color:#fff}
+.mmPublicGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.mmPublicCard{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:7px;min-width:0}.mmPublicCard img{width:100%;aspect-ratio:.72;object-fit:cover;border-radius:10px;display:block;background:var(--a2)}.mmPublicCard strong{display:block;font-size:12px;margin:5px 2px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mmPublicCard small{display:block;color:var(--muted);font-size:10px;margin:0 2px}
+@media(max-width:600px){.mmPeopleResults{grid-template-columns:1fr}.mmPublicGrid{gap:7px}.mmProfileThumb{height:125px}}
 </style>
 <script>
 (function(){
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-async function req(path,opts={}){
- if(typeof api==="function")return api(path,opts);
- throw new Error("The app API is unavailable");
-}
-window.openUserSearch=function(){
- document.querySelector(".mm-search-overlay")?.remove();
- const o=document.createElement("div");o.className="mm-search-overlay";
- o.innerHTML=`<div class="mm-search-box"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Search Users</h2><button id="mmClose">Close</button></div><p style="opacity:.65">Find a public manga library by username.</p><div class="mm-search-row"><input id="mmQ" placeholder="Username"><button id="mmGo">Search</button></div><div id="mmResults"></div></div>`;
- document.body.appendChild(o);o.querySelector("#mmClose").onclick=()=>o.remove();
- const run=async()=>{const q=o.querySelector("#mmQ").value.trim(),out=o.querySelector("#mmResults");if(!q){out.textContent="Enter a username.";return}out.textContent="Searching…";try{const rows=await req("profiles?select=id,username,display_name,bio,avatar_url,is_public&username=ilike."+encodeURIComponent("%"+q+"%")+"&limit=25");const u=(rows||[]).filter(x=>x.is_public!==false);out.innerHTML=u.length?u.map(x=>`<div class="mm-user"><div class="mm-user-avatar">${x.avatar_url?`<img src="${esc(x.avatar_url)}">`:esc((x.display_name||x.username||"?")[0].toUpperCase())}</div><div class="mm-user-info"><strong>${esc(x.display_name||x.username)}</strong><br><small>@${esc(x.username)}</small></div><button data-p="${esc(x.id)}">View</button></div>`).join(""):"<p style='opacity:.6'>No public users found.</p>"}catch(e){console.error(e);out.innerHTML="<p>Profile search isn't connected yet. Do not run any SQL again.</p>"}};
- o.querySelector("#mmGo").onclick=run;o.querySelector("#mmQ").onkeydown=e=>{if(e.key==="Enter")run()};o.addEventListener("click",e=>{const b=e.target.closest("[data-p]");if(b)openProfile(b.dataset.p,o)});
+const esc2=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const V=()=>document.getElementById("view");
+async function rows(path){return api(path)}
+window.renderPeoplePage=async function(q=""){
+ page="people"; const v=V();
+ v.innerHTML=`<div class="mmPeoplePage"><div class="sectionTitle">Search</div><div class="mmSearchRow"><input id="mmQ" placeholder="Search username..." value="${esc2(q)}"><button class="btn save" id="mmGo">Search</button></div><div id="mmResults"></div></div>`;
+ const input=$("mmQ"),out=$("mmResults");
+ async function go(){const q=input.value.trim().replace(/^@/,"");if(!q){out.innerHTML="<div class='statBox'>Type a username to search.</div>";return}out.innerHTML="<div class='statBox'>Searching…</div>";try{const r=await rows("profiles?select=id,username,display_name,bio,avatar_url,profile_thumb,is_public,tags&username=ilike."+encodeURIComponent("%"+q+"%")+"&limit=30");const a=(r||[]).filter(x=>x.is_public!==false);out.className="mmPeopleResults";out.innerHTML=a.length?a.map(p=>`<article class="mmPersonCard"><div class="mmAvatar">${p.avatar_url?`<img src="${esc2(p.avatar_url)}">`:esc2((p.display_name||p.username||"?")[0].toUpperCase())}</div><div class="mmPersonInfo"><strong>${esc2(p.display_name||p.username)}</strong><span>@${esc2(p.username)}</span><p>${esc2(p.bio||"")}</p></div><button class="mmViewBtn" data-profile-name="${esc2(p.username)}">View</button></article>`).join(""):"<div class='statBox' style='grid-column:1/-1'>No public users found.</div>"}catch(e){out.className="";out.innerHTML="<div class='statBox'>Search isn't connected to the profile table yet.</div>"}}
+ $("mmGo").onclick=go;input.onkeydown=e=>{if(e.key==="Enter")go()};if(q)go();
 };
-async function openProfile(id,o){const box=o.querySelector(".mm-search-box");box.innerHTML=`<button id="mmBack">Back</button><div id="mmProfile">Loading…</div>`;box.querySelector("#mmBack").onclick=()=>{o.remove();openUserSearch()};try{const r=await req("profiles?select=id,username,display_name,bio,avatar_url,is_public&id=eq."+encodeURIComponent(id)+"&limit=1"),p=r?.[0];if(!p||p.is_public===false){box.querySelector("#mmProfile").textContent="This profile is private.";return}const books=await req("manga?select=*&user_id=eq."+encodeURIComponent(id)+"&order=created_at.desc");box.querySelector("#mmProfile").innerHTML=`<div style="display:flex;gap:12px;align-items:center;margin-top:12px"><div class="mm-user-avatar">${p.avatar_url?`<img src="${esc(p.avatar_url)}">`:esc((p.display_name||p.username||"?")[0].toUpperCase())}</div><div><h2 style="margin:0">${esc(p.display_name||p.username)}</h2><div style="opacity:.6">@${esc(p.username)}</div></div></div>${p.bio?`<p>${esc(p.bio)}</p>`:""}<h3>Manga Library</h3><div class="mm-profile-books">${(books||[]).map(b=>`<div class="mm-profile-book">${b.cover_url?`<img src="${esc(b.cover_url)}">`:""}<strong>${esc(b.title||b.name||"Manga")}</strong></div>`).join("")||"<p>No manga listed.</p>"}</div>`}catch(e){console.error(e);box.querySelector("#mmProfile").textContent="Couldn't load this profile yet."}}
-const add=()=>{if(document.querySelector(".mm-search-launcher"))return;const b=document.createElement("button");b.className="mm-search-launcher";b.textContent="Search";b.onclick=openUserSearch;document.body.appendChild(b)};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",add):add();
+window.renderPublicProfile=async function(username,push=true){
+ username=String(username||"").replace(/^@/,"").trim().toLowerCase();if(!username){renderPeoplePage();return}
+ if(push)history.pushState({profile:username},"","/mymanga/profile/"+encodeURIComponent(username));
+ page="publicProfile";const v=V();v.innerHTML=`<div class="mmProfilePage"><button class="mmBackBtn" id="mmBack">← Search</button><div class="statBox">Loading profile…</div></div>`;
+ try{const r=await rows("profiles?select=id,username,display_name,bio,avatar_url,profile_thumb,is_public,tags&username=eq."+encodeURIComponent(username)+"&limit=1"),p=r?.[0];if(!p||p.is_public===false){v.innerHTML="<div class='mmProfilePage'><button class='mmBackBtn' onclick='renderPeoplePage()'>← Search</button><div class='statBox'>This profile is private or doesn't exist.</div></div>";return}
+ const books=await rows("manga?select=*&user_id=eq."+encodeURIComponent(p.id)+"&order=created_at.desc"),tags=Array.isArray(p.tags)?p.tags:[],sts=["All","Reading","Completed","Want to Read"];
+ v.innerHTML=`<div class="mmProfilePage"><button class="mmBackBtn" id="mmBack">← Search</button><section class="mmProfileHero">${p.profile_thumb?`<img class="mmProfileThumb" src="${esc2(p.profile_thumb)}">`:`<div class="mmProfileThumb"></div>`}<div class="mmProfileHead"><div class="mmProfileAvatar">${p.avatar_url?`<img src="${esc2(p.avatar_url)}">`:esc2((p.display_name||p.username||"?")[0].toUpperCase())}</div><div class="mmProfileName">${esc2(p.display_name||p.username)}</div><div class="mmProfileUsername">@${esc2(p.username)}</div>${p.bio?`<div class="mmProfileBio">${esc2(p.bio)}</div>`:""}<div class="mmTags">${tags.map(t=>`<span class="mmTag">${esc2(t)}</span>`).join("")}</div></div></section><div class="mmStatusTabs">${sts.map((x,i)=>`<button class="mmStatusTab ${i?"":"active"}" data-ps="${esc2(x)}">${esc2(x)}</button>`).join("")}</div><div id="mmPublicGrid" class="mmPublicGrid"></div></div>`;
+ const grid=$("mmPublicGrid");function draw(st){document.querySelectorAll("[data-ps]").forEach(b=>b.classList.toggle("active",b.dataset.ps===st));const a=st==="All"?books:books.filter(b=>b.status===st);grid.innerHTML=a.length?a.map(b=>`<article class="mmPublicCard">${b.cover_url?`<img src="${esc2(b.cover_url)}">`:"<div style='aspect-ratio:.72;background:var(--a2);border-radius:10px'></div>"}<strong>${esc2(b.name||b.title||"Manga")}</strong><small>${esc2(b.status||"")} · Chapter ${esc2(b.chapter||"0")}</small></article>`).join(""):"<div class='statBox' style='grid-column:1/-1'>No manga in this list.</div>"}document.querySelectorAll("[data-ps]").forEach(b=>b.onclick=()=>draw(b.dataset.ps));$("mmBack").onclick=()=>{history.pushState({page:"people"},"","/mymanga/");renderPeoplePage()};draw("All");
+ }catch(e){v.innerHTML="<div class='statBox'>Couldn't load this profile.</div>"}};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-page='people']");if(b){e.preventDefault();document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderPeoplePage();return}const p=e.target.closest("[data-profile-name]");if(p){renderPublicProfile(p.dataset.profileName,true)}});
+window.addEventListener("popstate",()=>{const m=location.pathname.match(/\/mymanga\/profile\/([^/]+)/);if(m)renderPublicProfile(decodeURIComponent(m[1]),false);else renderPeoplePage()});
+document.addEventListener("DOMContentLoaded",()=>{const m=location.pathname.match(/\/mymanga\/profile\/([^/]+)/);if(m)setTimeout(()=>renderPublicProfile(decodeURIComponent(m[1]),false),0)});
 })();
 </script>
