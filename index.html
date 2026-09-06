@@ -2,309 +2,248 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>My Manga</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
-:root{--a:#70acf4;--a2:#e8f3ff;--bg:#fbfdff;--card:#fff;--text:#29486b;--muted:#7690ae;--line:#dcecff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Fredoka,system-ui,sans-serif}
-button,input,select,textarea{font:inherit}button{cursor:pointer}
-header{padding:17px 15px 9px;background:var(--card);position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
-.top{display:flex;align-items:center;justify-content:space-between}.brand{font-size:31px;font-weight:600;letter-spacing:-1px;color:var(--a)}
-.tools{display:flex;gap:7px}.tool{border:1px solid var(--line);background:var(--card);color:var(--a);border-radius:13px;padding:9px 11px;font-weight:600}
-.search{margin-top:12px;width:100%;border:1px solid var(--line);border-radius:16px;padding:12px 15px;background:var(--bg);color:var(--text);outline:0}
-.tabs{display:flex;gap:8px;overflow:auto;padding:10px 0 3px}.tab{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--a);border-radius:20px;padding:8px 13px;font-weight:600}.tab.active{background:var(--a);color:#fff}
-main{padding:14px 12px 100px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:9px;box-shadow:0 5px 18px #a9c9e52b;position:relative;min-width:0}.cover{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:11px;background:var(--a2);display:block}
-.heart{position:absolute;right:16px;top:16px;width:34px;height:34px;border:0;border-radius:50%;background:#fffffff0;font-size:21px;color:var(--a)}
-.title{font-size:18px;font-weight:600;margin:10px 3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status{display:inline-block;border-radius:20px;padding:5px 9px;background:var(--a2);color:var(--a);font-size:12px;font-weight:600}.meta{font-size:13px;color:var(--muted);margin:4px 3px}.desc{font-size:12px;color:var(--muted);line-height:1.4;margin:8px 3px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.linkBtn{width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:var(--a2);color:var(--a);display:grid;place-items:center;text-decoration:none;font-size:21px;margin:7px 0 4px 3px}.delete{margin-top:7px;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:12px;padding:8px 12px;font-weight:600}
-.addCard{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:360px;border:2px dashed var(--a);background:var(--card);color:var(--a);box-shadow:none}.plus{width:56px;height:56px;border-radius:50%;background:var(--a);color:#fff;display:grid;place-items:center;font-size:36px}.addText{font-size:17px;font-weight:600;margin-top:11px}
-.fab{position:fixed;right:18px;bottom:76px;width:57px;height:57px;border:0;border-radius:50%;background:var(--a);color:#fff;font-size:31px;box-shadow:0 7px 20px #70aaf555;z-index:6}
-nav{position:fixed;left:10px;right:10px;bottom:10px;height:60px;border:1px solid var(--line);background:#fffffff5;backdrop-filter:blur(10px);border-radius:30px;display:flex;justify-content:space-around;align-items:center;z-index:5;box-shadow:0 6px 25px #9ec7ef33}.nav{border:0;background:none;color:var(--muted);font-weight:600;font-size:11px}.nav.active{color:var(--a)}.navIcon{font-size:20px;display:block}
-.modal{display:none;position:fixed;inset:0;background:#183b684d;z-index:20;align-items:flex-end}.modal.open{display:flex}.sheet{width:100%;max-height:92vh;overflow:auto;background:var(--card);border-radius:24px 24px 0 0;padding:20px 18px 30px}h2{margin:0;color:var(--text);font-weight:600}label{display:block;margin:13px 0 6px;font-size:13px;font-weight:600;color:var(--muted)}
-input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:11px;color:var(--text);outline:0}textarea{min-height:80px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fileBox{display:block;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:11px;color:var(--muted);font-weight:600}.fileBox input{display:none}.preview{width:90px;height:120px;object-fit:cover;border-radius:10px;margin-top:7px;display:none}.actions{display:flex;gap:9px;margin-top:18px}.btn{flex:1;border:0;border-radius:13px;padding:13px;font-weight:600}.cancel{background:var(--a2);color:var(--a)}.save{background:var(--a);color:#fff}
-.panel{display:none;position:fixed;top:74px;right:12px;width:min(350px,calc(100% - 24px));max-height:65vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 30px #7caeea44;z-index:15;padding:16px}.panel.open{display:block}
-.auth{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;align-items:center;justify-content:center;padding:22px}.auth.open{display:flex}.authbox{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 10px 35px #7caeea25}.authTitle{font-size:34px;color:var(--a);font-weight:600;text-align:center;margin-bottom:4px}.authSub{text-align:center;color:var(--muted);margin-bottom:18px}.authMsg{min-height:20px;color:#d05f78;font-size:13px;margin-top:10px}.authSwitch{border:0;background:none;color:var(--a);font-weight:600;width:100%;margin-top:12px}.userPill{border:1px solid var(--line);background:var(--a2);color:var(--a);border-radius:20px;padding:7px 10px;font-weight:600;font-size:12px}
-.sectionTitle{font-size:25px;font-weight:600;margin:2px 0 13px}.statBox{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:17px;margin-bottom:10px}.statNum{font-size:30px;color:var(--a);font-weight:600}.settingRow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid var(--line)}.colorInput{width:48px;height:38px;padding:2px}.logout{border:0;border-radius:12px;background:#ffeaf0;color:#c35c79;padding:11px 14px;font-weight:600}
-
-.verifyBanner{display:none;margin:12px 0 0;padding:13px 15px;border-radius:15px;background:#e8f8ed;border:1px solid #bfe8cb;color:#3f7d53;font-weight:600}
-.verifyBanner.show{display:block}
-
-.pwWrap{position:relative;display:flex;align-items:center}
-.pwWrap input{width:100%;padding-right:48px}
-.pwEye{position:absolute;right:8px;border:0;background:transparent;font-size:19px;cursor:pointer;padding:8px;color:var(--muted)}
-.eyeIcon{display:inline-block;width:19px;height:12px;border:1.8px solid currentColor;border-radius:70% 20% 70% 20%;transform:rotate(45deg);position:relative}.eyeIcon:after{content:'';position:absolute;width:5px;height:5px;border:1.5px solid currentColor;border-radius:50%;left:5px;top:2px}
-.profileHero{padding:20px;border-radius:22px;background:var(--card,#fff);border:1px solid var(--line,#eee);text-align:center}
-.avatarBig{width:100px;height:100px;border-radius:50%;margin:auto;display:grid;place-items:center;overflow:hidden;position:relative}
-.avatarBig img{width:100%;height:100%;object-fit:cover}
-.avatarEdit{position:absolute;right:0;bottom:0;border:0;border-radius:50%;width:32px;height:32px;background:var(--accent);color:#fff}
-.profileThumb{width:100%;height:150px;border-radius:18px;object-fit:cover}
-.tag{display:inline-block;padding:6px 10px;margin:4px;border-radius:999px;background:var(--chip,#f0f5ff);font-size:13px}
-.profileGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media(max-width:520px){.profileGrid{grid-template-columns:1fr}}
+:root{--blue:#70acef;--blue2:#eaf4ff;--ink:#24466a;--muted:#7890a8;--line:#e3edf6;--bg:#fbfdff;--card:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.hidden{display:none!important}.screen{min-height:100vh}
+.authWrap{display:grid;place-items:center;padding:22px}.authCard{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 14px 45px #6b9fd51c}
+.brand{font-size:42px;font-weight:800;letter-spacing:-1.8px;color:var(--blue);margin:0 0 7px}.subtitle{color:var(--muted);margin:0 0 22px}
+label{display:block;font-size:14px;font-weight:700;margin:14px 0 6px}input,textarea,select{width:100%;border:1px solid #d9e6f1;border-radius:15px;background:#fff;color:var(--ink);padding:13px 14px;outline:none}input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #70acef1c}
+textarea{min-height:95px;resize:vertical}.pw{position:relative}.pw input{padding-right:52px}.eye{position:absolute;right:5px;top:5px;width:40px;height:40px;border:0;background:transparent;color:#6e8ca8}.eyeIcon{display:block;width:19px;height:12px;border:1.8px solid currentColor;border-radius:65% 25% 65% 25%;transform:rotate(45deg);margin:auto;position:relative}.eyeIcon:after{content:"";position:absolute;width:5px;height:5px;border:1.5px solid currentColor;border-radius:50%;left:5px;top:2px}
+.primary{width:100%;border:0;background:var(--blue);color:#fff;font-weight:800;border-radius:15px;padding:14px;margin-top:18px}.ghost{border:1px solid var(--line);background:#fff;color:#62819e;border-radius:14px;padding:11px 14px;font-weight:700}.link{display:block;border:0;background:transparent;color:#6a9fd6;padding:11px 0;margin:auto}.msg{min-height:23px;color:#b45555;margin-top:12px}
+.app{max-width:1080px;margin:auto;padding:22px 22px 120px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px}.title{font-size:43px;letter-spacing:-2px;color:var(--blue);margin:0;font-weight:800}.topBtns{display:flex;gap:9px}.round{width:56px;height:56px;border-radius:18px;border:1px solid var(--line);background:#fff;color:#6a91b2;font-size:25px;display:grid;place-items:center}
+.search{margin:24px 0 18px}.search input{font-size:25px;padding:18px 22px;border-radius:24px;background:#fff}
+.tabs{display:flex;gap:12px;overflow:auto;padding:0 0 17px}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#6990af;border-radius:25px;padding:13px 22px;font-weight:800}.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:20px}.mangaCard{background:#fff;border:1px solid var(--line);border-radius:24px;padding:15px;box-shadow:0 8px 28px #6b9fd50d}.cover{width:100%;height:285px;border-radius:18px;object-fit:cover;background:#edf5fc;display:block}.coverPlaceholder{height:285px;border-radius:18px;background:var(--blue2);display:grid;place-items:center;color:#82a8c9;font-size:54px}.fav{position:absolute;right:12px;top:12px;width:49px;height:49px;border-radius:50%;border:0;background:#fff;color:#7ba1bf;font-size:28px;box-shadow:0 4px 15px #0001}.coverWrap{position:relative}.mangaName{font-size:25px;font-weight:800;margin:13px 5px 8px}.pill{display:inline-block;background:var(--blue2);color:#6195c9;border-radius:18px;padding:8px 13px;font-weight:800}.meta{color:#708aa2;margin:10px 5px}.cardActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 5px 3px}.addCard{min-height:440px;border:3px dashed #c8def0;border-radius:24px;background:#fff;display:grid;place-items:center;text-align:center;color:var(--blue);font-weight:800;font-size:25px}.plus{width:105px;height:105px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:62px;font-weight:300;margin:auto}.empty{padding:45px 20px;text-align:center;color:var(--muted)}
+.bottom{position:fixed;left:50%;bottom:13px;transform:translateX(-50%);width:min(760px,calc(100% - 28px));background:#fff;border:1px solid var(--line);border-radius:32px;padding:8px;display:grid;grid-template-columns:repeat(5,1fr);box-shadow:0 10px 35px #6b9fd51f;z-index:20}.nav{border:0;background:transparent;color:#7891a8;padding:9px 4px;border-radius:22px;font-weight:800}.nav.active{color:var(--blue);background:#f1f8ff}.navIcon{display:block;font-size:22px;margin-bottom:4px}.fab{position:fixed;right:28px;bottom:95px;width:76px;height:76px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:48px;box-shadow:0 9px 25px #6b9fd54d;z-index:19}
+.modal{position:fixed;inset:0;background:#24466a55;display:none;place-items:center;padding:18px;z-index:50}.modal.open{display:grid}.modalCard{width:min(540px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:25px;padding:23px}.modalHead{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#edf5fc;color:#6e91ad;width:40px;height:40px;border-radius:50%;font-size:22px}.modalActions{display:flex;gap:10px;margin-top:17px}.modalActions button{flex:1}
+.profileHead{display:flex;gap:16px;align-items:center}.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;background:var(--blue2);display:grid;place-items:center;font-size:34px;overflow:hidden}.banner{width:100%;height:170px;object-fit:cover;border-radius:20px;background:var(--blue2);margin-bottom:17px}.sectionTitle{font-size:27px;margin:8px 0 16px}.person{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--line)}.person:last-child{border-bottom:0}.person .avatar{width:58px;height:58px;font-size:22px}.tag{display:inline-block;padding:7px 11px;border-radius:18px;background:var(--blue2);color:#6595bd;margin:3px;font-size:13px;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;text-align:center}.stat b{display:block;font-size:30px;color:var(--blue)}
+@media(max-width:600px){.app{padding:18px 16px 120px}.title{font-size:35px}.grid{grid-template-columns:1fr 1fr;gap:12px}.cover,.coverPlaceholder{height:210px}.mangaName{font-size:20px}.addCard{min-height:350px}.bottom{bottom:8px}.fab{right:20px;bottom:91px;width:66px;height:66px;font-size:40px}.stats{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-<header>
-<div class="top"><div class="brand">My Manga</div><div class="tools"><button class="tool" id="sortBtn">↕ Sort</button><button class="tool" id="notifyBtn">♧<span id="dot" style="display:none;color:var(--a);margin-left:3px">●</span></button><button class="tool" id="filterBtn">♡</button></div></div>
-<input id="search" class="search" placeholder="Search...">
-<div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="On Hold">On Hold</button><button class="tab" data-s="Dropped">Dropped</button><button class="tab" data-s="Plan to Read">Plan to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div>
-</header>
-<main><div id="verifyBanner" class="verifyBanner"></div><div id="view"></div></main>
+<div id="auth" class="screen authWrap"><div class="authCard">
+<h1 class="brand">My Manga ✦</h1><p class="subtitle">Your personal manga library.</p>
+<div id="authForm"></div>
+</div></div>
+
+<div id="app" class="hidden">
+<div class="app">
+<div class="top"><h1 class="title">My Manga ✦</h1><div class="topBtns"><button class="ghost" id="sortBtn">↕ Sort</button><button class="round" id="friendTop" title="Friends">♧</button></div></div>
+<div class="search"><input id="search" placeholder="Search..."></div>
+<div class="tabs" id="tabs">
+<button class="tab active" data-status="All">All</button><button class="tab" data-status="Reading">Reading</button><button class="tab" data-status="Completed">Completed</button><button class="tab" data-status="On Hold">On Hold</button><button class="tab" data-status="Dropped">Dropped</button><button class="tab" data-status="Plan to Read">Plan to Read</button>
+</div>
+<div id="view"></div>
+</div>
 <button class="fab" id="fab">+</button>
-<nav><button class="nav active" data-page="home"><span class="navIcon">⌂</span>Explore</button><button class="nav" data-page="library"><span class="navIcon">▤</span>My Library</button><button class="nav" id="navAdd"><span class="navIcon">＋</span>Add</button><button class="nav" data-page="profile"><span class="navIcon">♙</span>Profile</button><button class="nav" data-page="friends"><span class="navIcon">♧</span>Friends</button><button class="nav" data-page="stats"><span class="navIcon">▥</span>Stats</button><button class="nav" data-page="settings"><span class="navIcon">⚙</span>Settings</button></nav>
-
-<div class="panel" id="updates"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:20px">Manga Updates</strong><button class="tool" id="closeUpdates">×</button></div><div id="updateList" style="margin-top:10px;color:var(--muted)">No updates yet.</div><button class="btn save" id="checkUpdates" style="width:100%;margin-top:12px">Check for updates</button></div>
-
-<div class="modal" id="addModal"><div class="sheet"><h2>Add Manga</h2><label>Manga Name</label><input id="mName" placeholder="Manga name"><div class="row"><div><label>Status</label><select id="mStatus"><option>Reading</option><option>Completed</option><option>On Hold</option><option>Dropped</option><option>Plan to Read</option></select></div><div><label>Chapter</label><input id="mChapter" type="number" min="0" value="0"></div></div><label>Link</label><input id="mLink" type="url" placeholder="https://..."><label>Description</label><textarea id="mDesc" placeholder="Description..."></textarea><label>Cover Picture</label><label class="fileBox" for="mCover">Choose cover picture<input id="mCover" type="file" accept="image/*"></label><img id="mPreview" class="preview"><label>Favorite</label><select id="mFav"><option value="no">♡ No</option><option value="yes">♥ Yes</option></select><div class="actions"><button class="btn cancel" id="cancelAdd">Cancel</button><button class="btn save" id="saveAdd">Add Manga</button></div></div></div>
-
-<div class="modal" id="editModal"><div class="sheet"><h2>Edit Manga</h2><input id="eId" type="hidden"><label>Manga Name</label><input id="eName"><div class="row"><div><label>Status</label><select id="eStatus"><option>Reading</option><option>Completed</option><option>On Hold</option><option>Dropped</option><option>Plan to Read</option></select></div><div><label>Chapter</label><input id="eChapter" type="number" min="0"></div></div><label>Link</label><input id="eLink" type="url"><label>Description</label><textarea id="eDesc"></textarea><div class="actions"><button class="btn cancel" id="cancelEdit">Cancel</button><button class="btn save" id="saveEdit">Save Changes</button></div></div></div>
-
-<div class="auth open" id="auth"><div class="authbox">
-<div class="authTitle">My Manga</div>
-<div class="authSub" id="authSub">Log in to sync your manga library</div>
-
-<div id="signupOnly" style="display:none">
-<label>Email</label><input id="aEmail" type="email" placeholder="you@example.com" autocomplete="email">
-<label>Username</label><input id="aUser" placeholder="Username" autocomplete="username">
+<nav class="bottom">
+<button class="nav active" data-page="home"><span class="navIcon">⌂</span>Home</button>
+<button class="nav" data-page="library"><span class="navIcon">▤</span>Library</button>
+<button class="nav" data-page="add"><span class="navIcon">＋</span>Add</button>
+<button class="nav" data-page="stats"><span class="navIcon">▥</span>Stats</button>
+<button class="nav" data-page="settings"><span class="navIcon">⚙</span>Settings</button>
+</nav>
 </div>
 
-<div id="loginEmail">
-<label id="loginUserLabel">Username or email</label>
-<input id="aLogin" placeholder="Username or email" autocomplete="username">
-</div>
+<div class="modal" id="mangaModal"><div class="modalCard"><div class="modalHead"><h2 id="mTitle">Add Manga</h2><button class="close" id="closeM">×</button></div>
+<label>Title</label><input id="mName" placeholder="Manga title">
+<label>Cover image URL</label><input id="mCover" placeholder="https://...">
+<label>Status</label><select id="mStatus"><option>Reading</option><option>Completed</option><option>On Hold</option><option>Dropped</option><option>Plan to Read</option></select>
+<label>Chapter</label><input id="mChapter" placeholder="01">
+<label>Open link</label><input id="mLink" placeholder="https://...">
+<label>Notes</label><textarea id="mNotes" placeholder="Your notes..."></textarea>
+<div class="modalActions"><button class="ghost" id="cancelM">Cancel</button><button class="primary" id="saveM">Save Manga</button></div>
+</div></div>
 
-<label>Password</label>
-<div class="pwWrap"><input id="aPass" type="password" placeholder="Password" autocomplete="current-password">
-<button type="button" class="pwEye" data-target="aPass" aria-label="Show password"><span class="eyeIcon"></span></button></div>
-
-<div id="repeatWrap" style="display:none">
-<label>Repeat password</label>
-<div class="pwWrap"><input id="aPass2" type="password" placeholder="Repeat your password" autocomplete="new-password">
-<button type="button" class="pwEye" data-target="aPass2" aria-label="Show password"><span class="eyeIcon"></span></button></div>
-</div>
-
-<div class="authMsg" id="authMsg"></div>
-<button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button>
-<button class="authSwitch" id="switchAuth">Create an account</button>
-<button class="authSwitch" id="forgot">Forgot password?</button>
+<div class="modal" id="profileModal"><div class="modalCard"><div class="modalHead"><h2>Customize Profile</h2><button class="close" id="closeP">×</button></div>
+<label>Profile picture URL</label><input id="pAvatar" placeholder="https://...">
+<label>Thumbnail / banner URL</label><input id="pBanner" placeholder="https://...">
+<label>Display name</label><input id="pDisplay">
+<label>Username</label><input id="pUsername">
+<label>Bio</label><textarea id="pBio"></textarea>
+<label>Manga tags</label><input id="pTags" placeholder="Yuri, GL, BL, Romance">
+<label>Profile visibility</label><select id="pPublic"><option value="true">Public profile</option><option value="false">Private profile</option></select>
+<div class="modalActions"><button class="ghost" id="cancelP">Cancel</button><button class="primary" id="saveP">Save profile</button></div>
 </div></div>
 
 <script>
 const SUPABASE_URL="https://anjwxsqcvhpzoillktmy.supabase.co";
 const SUPABASE_KEY="sb_publishable_pas11tpmdKbIMk8NyOTCRw_O0QAUPnt";
-let session=null, items=[], active="All", page="home", authMode="login", updates=[], localProfile=null, peopleCache=[];
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let user=null, profile=null, manga=[], page="home", status="All", editingId=null;
+
 const $=id=>document.getElementById(id);
-function msg(t){$("authMsg").textContent=t}
-async function api(path,opts={}){
- const h=Object.assign({"apikey":SUPABASE_KEY,"Content-Type":"application/json"},opts.headers||{});
- if(session?.access_token)h.Authorization="Bearer "+session.access_token;
- const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{...opts,headers:h});
- const text=await r.text(); let data=null; try{data=text?JSON.parse(text):null}catch(e){}
- if(!r.ok)throw new Error(data?.message||data?.error_description||text||"Request failed");
- return data;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function notify(t){alert(t)}
+
+function eyeField(id,autocomplete){return `<div class="pw"><input id="${id}" type="password" autocomplete="${autocomplete||"new-password"}"><button type="button" class="eye" data-eye="${id}"><span class="eyeIcon"></span></button></div>`}
+
+function authScreen(mode="login"){
+ $("authForm").innerHTML=mode==="login"?`
+ <label>Username or email</label><input id="loginId" autocomplete="username">
+ <label>Password</label>${eyeField("loginPass","current-password")}
+ <div id="authMsg" class="msg"></div><button class="primary" id="authBtn">Login</button>
+ <button class="link" id="goSignup">Create an account</button><button class="link" id="goForgot">Forgot password?</button>`
+ :`
+ <label>Email</label><input id="signupEmail" type="email" autocomplete="email">
+ <label>Username</label><input id="signupUsername" autocomplete="username">
+ <label>Password</label>${eyeField("signupPass")}
+ <label>Repeat password</label>${eyeField("signupPass2")}
+ <div id="authMsg" class="msg"></div><button class="primary" id="authBtn">Create account</button>
+ <button class="link" id="goLogin">Already have an account? Log in</button>`;
+ document.querySelectorAll("[data-eye]").forEach(b=>b.onclick=()=>{let i=$(b.dataset.eye);i.type=i.type==="password"?"text":"password"});
+ $("authBtn").onclick=()=>mode==="login"?login():signup();
+ if(mode==="login"){$("goSignup").onclick=()=>authScreen("signup");$("goForgot").onclick=()=>location.href="./forgot.html"}else $("goLogin").onclick=()=>authScreen("login");
 }
-async function auth(path,body){
- const r=await fetch(SUPABASE_URL+"/auth/v1/"+path,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
- const data=await r.json(); if(!r.ok)throw new Error(data.error_description||data.msg||data.message||"Authentication failed"); return data;
-}
-async function loadProfile(){
+
+async function login(){
+ let id=$("loginId").value.trim(), pass=$("loginPass").value, msg=$("authMsg");msg.textContent="";
  try{
-  const p=await api("profiles?select=*&id=eq."+encodeURIComponent(session.user.id));
-  localProfile=p?.[0]||null;
-  if(!localProfile && session?.user?.user_metadata?.username){
-   await createProfile(session.user.user_metadata.username);
-   const pp=await api("profiles?select=*&id=eq."+encodeURIComponent(session.user.id));
-   localProfile=pp?.[0]||null;
+  let email=id;
+  if(!id.includes("@")){
+   const {data,error}=await sb.from("profiles").select("email").eq("username",id).maybeSingle();
+   if(error||!data?.email) throw Error("Username not found.");
+   email=data.email;
   }
-  if(localProfile?.username){$("authSub").textContent="Welcome back, "+localProfile.username}
- }catch(e){}
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error)throw error;
+  user=data.user;await loadProfile();await loadManga();showApp();
+ }catch(e){msg.textContent=e.message||"Login failed."}
+}
+async function signup(){
+ let email=$("signupEmail").value.trim(),username=$("signupUsername").value.trim(),pass=$("signupPass").value,msg=$("authMsg");msg.textContent="";
+ if(!email||!username||!pass)return msg.textContent="Please fill in all fields.";
+ if(pass!==$("signupPass2").value)return msg.textContent="Passwords do not match.";
+ if(username.length<3)return msg.textContent="Username must be at least 3 characters.";
+ try{
+  const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{username},emailRedirectTo:location.origin+location.pathname.replace(/\/?$/,"/verification.html")}});
+  if(error)throw error;
+  if(data.user){
+   await sb.from("profiles").upsert({id:data.user.id,email,username,display_name:username,bio:"",tags:[],is_public:true});
+  }
+  if(data.session){user=data.user;await loadProfile();showApp()}else msg.textContent="Account created. Check your email to verify it.";
+ }catch(e){msg.textContent=e.message||"Sign up failed."}
+}
+
+async function loadProfile(){
+ const {data,error}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+ if(error)console.warn(error);
+ profile=data||{id:user.id,email:user.email,username:user.user_metadata?.username||"",display_name:user.user_metadata?.username||"",bio:"",tags:[],is_public:true};
 }
 async function loadManga(){
- try{items=await api("manga?select=*&user_id=eq."+encodeURIComponent(session.user.id)+"&order=created_at.desc")}
- catch(e){items=await api("manga?select=*&order=created_at.desc")}
- render()
+ const {data,error}=await sb.from("manga").select("*").eq("user_id",user.id).order("created_at",{ascending:false});
+ if(error){console.warn(error);manga=[]}else manga=data||[];
 }
-async function createProfile(username){
- try{
-  const body={id:session.user.id,username,email:session.user.email||"",display_name:username,bio:"",avatar_emoji:"♡",profile_color:"#e8f3ff"};
-  await api("profiles",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify(body)});
- }catch(e){}
-}
+function showApp(){$("auth").classList.add("hidden");$("app").classList.remove("hidden");render()}
 function render(){
- const v=$("view");
- if(page==="stats"){renderStats(v);return}
- if(page==="settings"){renderSettings(v);return}
- if(page==="friends"){renderFriends(v);return}
- if(page==="profile"){renderProfile(v);return}
- if(page==="home"){renderHome(v);return}
- let shown=items.filter(x=>active==="All"||x.status===active||(active==="Favorites"&&x.favorite)).filter(x=>x.name.toLowerCase().includes($("search").value.toLowerCase()));
- let html='<div class="grid">';
- shown.forEach(x=>{html+=`<article class="card"><img class="cover" src="${esc(x.cover_url||"")}" alt=""><button class="heart" onclick="toggleFav('${x.id}')">${x.favorite?"♥":"♡"}</button><div class="title">${esc(x.name)}</div><div class="status">${esc(x.status||"")}</div><div class="meta">Chapter: ${esc(x.chapter||"0")}</div>${x.link?`<a class="linkBtn" href="${esc(x.link)}" target="_blank" rel="noopener">↗</a>`:""}${x.description?`<div class="desc">${esc(x.description)}</div>`:""}<button class="delete" onclick="editManga('${x.id}')">Edit</button> <button class="delete" onclick="deleteManga('${x.id}')">Delete</button></article>`});
- html+='<button class="card addCard" onclick="openAdd()"><span class="plus">+</span><span class="addText">Add Manga</span></button></div>';
- v.innerHTML=html;
+ document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===page));
+ if(page==="settings")return settingsPage();
+ if(page==="stats")return statsPage();
+ if(page==="library")return libraryPage();
+ if(page==="friends")return friendsPage();
+ if(page==="profile")return profilePage();
+ return homePage();
 }
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function renderStats(v){
- const total=items.length,read=items.filter(x=>x.status==="Reading").length,done=items.filter(x=>x.status==="Completed").length,fav=items.filter(x=>x.favorite).length;
- v.innerHTML=`<div class="sectionTitle">Statistics</div><div class="statBox"><div class="statNum">${total}</div>Total manga</div><div class="statBox"><div class="statNum">${read}</div>Reading</div><div class="statBox"><div class="statNum">${done}</div>Completed</div><div class="statBox"><div class="statNum">${fav}</div>Favorites</div>`;
+function filtered(){
+ let q=$("search").value.trim().toLowerCase();
+ return manga.filter(m=>(status==="All"||m.status===status)&&(!q||String(m.title).toLowerCase().includes(q)));
 }
-function renderSettings(v){
- const verified=!!session?.user?.email_confirmed_at;
- v.innerHTML=`<div class="sectionTitle">Settings</div>
- <div class="statBox">
-   <div class="settingRow"><span>Username</span><span class="userPill">@${esc(localProfile?.username||"not set")}</span></div>
-   <div class="settingRow"><span>Email</span><span class="userPill">${esc(session?.user?.email||"")}</span></div>
-   <div class="settingRow"><span>Email status</span><span class="userPill" style="${verified?"":"color:#b46b2c;background:#fff4e7"}">${verified?"✓ Verified":"⚠ Not verified"}</span></div>
-   <div style="padding-top:14px"><button class="btn save" id="profileBtn">Customize Profile</button></div>
- </div>
- <div class="statBox">
-   <div class="settingRow"><span>Appearance</span><select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></div>
-   <div class="settingRow"><span>Accent color</span><input id="accent" class="colorInput" type="color" value="${localStorage.getItem("accent")||"#70acf4"}"></div>
-   <div style="padding-top:16px"><button class="logout" id="logout">Log out</button></div>
- </div>`;
- const th=localStorage.getItem("theme")||"light";$("theme").value=th;applyTheme(th);
- $("theme").onchange=e=>{localStorage.setItem("theme",e.target.value);applyTheme(e.target.value)}
- $("accent").oninput=e=>{localStorage.setItem("accent",e.target.value);applyAccent(e.target.value)}
- $("logout").onclick=logout;
- $("profileBtn").onclick=openProfile;
+function homePage(){
+ $("view").innerHTML=`<div class="grid" id="mGrid"></div>`;
+ drawManga(filtered(),true);
 }
+function libraryPage(){
+ $("view").innerHTML=`<div class="grid" id="mGrid"></div>`;
+ drawManga(filtered(),false);
+}
+function drawManga(list,addCard){
+ let html=list.map(m=>`<article class="mangaCard"><div class="coverWrap">${m.cover_url?`<img class="cover" src="${esc(m.cover_url)}" alt="">`:`<div class="coverPlaceholder">＋</div>`}<button class="fav" data-fav="${m.id}">${m.favorite?"♥":"♡"}</button></div><div class="mangaName">${esc(m.title)}</div><span class="pill">${esc(m.status)}</span><div class="meta">Chapter: ${esc(m.chapter||"—")}</div>${m.link?`<div class="meta"><a href="${esc(m.link)}" target="_blank" rel="noopener">↗ Open link</a></div>`:""}${m.notes?`<div class="meta">${esc(m.notes)}</div>`:""}<div class="cardActions"><button class="ghost" data-edit="${m.id}">Edit</button><button class="ghost" data-delete="${m.id}">Delete</button></div></article>`).join("");
+ if(addCard)html+=`<button class="addCard" id="addCard"><div><div class="plus">+</div><div style="margin-top:16px">Add Manga</div></div></button>`;
+ $("mGrid").innerHTML=html||(!addCard?`<div class="empty">Your library is empty. Add your first manga.</div>`:`<button class="addCard" id="addCard"><div><div class="plus">+</div><div style="margin-top:16px">Add Manga</div></div></button>`);
+ $("addCard")?.addEventListener("click",openManga);
+ document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>toggleFav(b.dataset.fav));
+ document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openManga(b.dataset.edit));
+ document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteManga(b.dataset.delete));
+}
+function openManga(id=null){
+ editingId=id;
+ $("mTitle").textContent=id?"Edit Manga":"Add Manga";
+ let m=id?manga.find(x=>String(x.id)===String(id)):null;
+ $("mName").value=m?.title||"";$("mCover").value=m?.cover_url||"";$("mStatus").value=m?.status||"Reading";$("mChapter").value=m?.chapter||"";$("mLink").value=m?.link||"";$("mNotes").value=m?.notes||"";
+ $("mangaModal").classList.add("open");
+}
+async function saveManga(){
+ let body={user_id:user.id,title:$("mName").value.trim(),cover_url:$("mCover").value.trim()||null,status:$("mStatus").value,chapter:$("mChapter").value.trim(),link:$("mLink").value.trim()||null,notes:$("mNotes").value.trim()};
+ if(!body.title)return notify("Please enter a title.");
+ let r=editingId?await sb.from("manga").update(body).eq("id",editingId).eq("user_id",user.id):await sb.from("manga").insert(body);
+ if(r.error)return notify(r.error.message);
+ $("mangaModal").classList.remove("open");await loadManga();render();
+}
+async function deleteManga(id){if(!confirm("Delete this manga?"))return;const r=await sb.from("manga").delete().eq("id",id).eq("user_id",user.id);if(r.error)return notify(r.error.message);await loadManga();render()}
+async function toggleFav(id){let m=manga.find(x=>String(x.id)===String(id));if(!m)return;const r=await sb.from("manga").update({favorite:!m.favorite}).eq("id",id).eq("user_id",user.id);if(r.error)return notify(r.error.message);await loadManga();render()}
 
-function renderHome(v){
- const people=peopleCache.filter(x=>x.id!==session?.user?.id).slice(0,8);
- v.innerHTML=`<div class="sectionTitle">Explore</div>
- <div class="statBox"><div style="font-size:18px;font-weight:600">Find readers & friends</div>
- <div style="color:var(--muted);margin:5px 0 12px">Search a username or discover profiles.</div>
- <div style="display:flex;gap:8px"><input id="friendSearch" placeholder="Search @username..."><button class="btn save" id="friendSearchBtn" style="max-width:105px">Search</button></div></div>
- <div class="sectionTitle" style="margin-top:18px">People to explore</div>
- <div class="grid">${people.length?people.map(personCard).join(""):'<div class="statBox" style="grid-column:1/-1">No public profiles yet.</div>'}</div>`;
- $("friendSearchBtn").onclick=searchPeople;
- $("friendSearch").onkeydown=e=>{if(e.key==="Enter")searchPeople()};
+function statsPage(){
+ let counts={Reading:0,Completed:0,"On Hold":0,Dropped:0,"Plan to Read":0};manga.forEach(m=>counts[m.status]=(counts[m.status]||0)+1);
+ $("view").innerHTML=`<h2 class="sectionTitle">Your Stats</h2><div class="stats"><div class="stat"><b>${manga.length}</b>Total</div><div class="stat"><b>${counts.Reading}</b>Reading</div><div class="stat"><b>${counts.Completed}</b>Completed</div><div class="stat"><b>${counts["On Hold"]}</b>On Hold</div><div class="stat"><b>${counts.Dropped}</b>Dropped</div><div class="stat"><b>${counts["Plan to Read"]}</b>Plan to Read</div></div>`;
 }
-function personCard(x){
- return `<article class="card"><div style="display:flex;align-items:center;gap:11px">
- <div style="width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:${esc(x.profile_color||"#e8f3ff")};font-size:25px;overflow:hidden">
- ${x.avatar_url?`<img src="${esc(x.avatar_url)}" style="width:100%;height:100%;object-fit:cover">`:(x.avatar_emoji||"♡")}
- </div><div style="min-width:0"><div class="title" style="margin:0">${esc(x.display_name||x.username)}</div><div class="meta">@${esc(x.username)}</div></div></div>
- <div class="desc">${esc(x.bio||"No bio yet.")}</div>
- <button class="delete" onclick="sendFriend('${x.id}')">＋ Add friend</button></article>`;
+function settingsPage(){
+ $("view").innerHTML=`<div class="card"><h2 class="sectionTitle">Settings</h2><p><b>Username</b><br>@${esc(profile?.username||"not set")}</p><p><b>Email</b><br>${esc(user.email)}</p><p><b>Profile</b><br>${profile?.is_public===false?"Private":"Public"}</p><div class="cardActions"><button class="ghost" id="profileBtn">Customize profile</button><button class="ghost" id="friendsBtn">Friends</button><button class="ghost" id="logoutBtn">Log out</button></div></div>`;
+ $("profileBtn").onclick=()=>{page="profile";render()};$("friendsBtn").onclick=()=>{page="friends";render()};$("logoutBtn").onclick=logout;
 }
-async function searchPeople(){
- const q=$("friendSearch").value.trim().replace(/^@/,"");
- if(!q){renderHome($("view"));return}
- try{
-  const r=await api("profiles?select=*&username=ilike."+encodeURIComponent("%"+q+"%")+"&limit=20");
-  peopleCache=(r||[]).filter(x=>x.is_public!==false);renderHome($("view"));
- }catch(e){alert(e.message)}
-}
-async function loadPeople(){
- try{peopleCache=await api("profiles?select=*&order=created_at.desc&limit=8")||[]}catch(e){peopleCache=[]}
-}
-window.sendFriend=async id=>{
- try{
-  await api("friend_requests",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({sender_id:session.user.id,receiver_id:id,status:"pending"})});
-  alert("Friend request sent!"); 
- }catch(e){alert(e.message)}
+function profilePage(){
+ let p=profile||{};$("view").innerHTML=`<div class="card">${p.banner_url?`<img class="banner" src="${esc(p.banner_url)}">`:""}<div class="profileHead"><div class="avatar">${p.avatar_url?`<img class="avatar" src="${esc(p.avatar_url)}">`:"♡"}</div><div><h2 style="margin:0">${esc(p.display_name||p.username||"My Profile")}</h2><div class="muted">@${esc(p.username||"not set")}</div></div></div><p>${esc(p.bio||"No bio yet.")}</p><div>${(p.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div><p class="muted">${p.is_public===false?"Private profile":"Public profile"}</p><button class="primary" id="editProfile">Customize profile</button></div>`;
+ $("editProfile").onclick=()=>openProfile();
 }
 function openProfile(){
- const p=localProfile||{};
- const m=document.createElement("div");m.className="modal open";m.id="profileModal";
- const tags=(p.tags||[]).join(", ");
- m.innerHTML=`<div class="sheet"><h2>Customize Profile</h2>
- <label>Profile picture</label><input id="pAvatar" type="file" accept="image/*">
- <label>Profile thumbnail</label><input id="pThumb" type="file" accept="image/*">
- <label>Username</label><input id="pUser" value="${esc(p.username||"")}">
- <label>Display name</label><input id="pDisplay" value="${esc(p.display_name||p.username||"")}">
- <label>Bio</label><textarea id="pBio" placeholder="Tell people about your manga taste...">${esc(p.bio||"")}</textarea>
- <label>Manga tags</label><input id="pTags" placeholder="GL, BL, Yuri, Yaoi, Romance..." value="${esc(tags)}">
- <label>Profile visibility</label><select id="pPublic"><option value="true">Public profile</option><option value="false">Private profile</option></select>
- <div class="actions"><button class="btn cancel" onclick="document.getElementById('profileModal').remove()">Cancel</button><button class="btn save" id="saveProfile">Save Profile</button></div></div>`;
- document.body.appendChild(m);
- $("pPublic").value=String(p.is_public!==false);
- $("saveProfile").onclick=async()=>{
-  try{
-   const username=$("pUser").value.trim().toLowerCase().replace(/[^a-z0-9_]/g,"");
-   if(!username)throw new Error("Username is required.");
-   const body={username,display_name:$("pDisplay").value.trim()||username,bio:$("pBio").value.trim(),
-    tags:$("pTags").value.split(",").map(x=>x.trim()).filter(Boolean).slice(0,20),
-    is_public:$("pPublic").value==="true"};
-   // Image uploads require a configured Storage bucket; keep the selected files ready
-   // for the next storage step rather than pretending a local file is uploaded.
-   await api("profiles?id=eq."+encodeURIComponent(session.user.id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(body)});
-   localProfile=Object.assign(localProfile||{},body);m.remove();renderSettings($("view"));loadPeople();
-  }catch(e){alert(e.message)}
- };
+ let p=profile||{};$("pAvatar").value=p.avatar_url||"";$("pBanner").value=p.banner_url||"";$("pDisplay").value=p.display_name||"";$("pUsername").value=p.username||"";$("pBio").value=p.bio||"";$("pTags").value=(p.tags||[]).join(", ");$("pPublic").value=String(p.is_public!==false);$("profileModal").classList.add("open");
 }
-function renderProfile(v){
- const p=localProfile||{};
- if(p.is_public===false && p.id!==session?.user?.id){v.innerHTML=`<div class="statBox">This profile is private.</div>`;return}
- const tags=(p.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("");
- v.innerHTML=`<div class="profileHero">
- <div class="avatarBig" style="background:${esc(p.profile_color||"#e8f3ff")}">${p.avatar_url?`<img src="${esc(p.avatar_url)}">`:(p.avatar_emoji||"♡")}</div>
- <h2>${esc(p.display_name||p.username||"My Profile")}</h2><div class="meta">@${esc(p.username||"not set")}</div>
- <p>${esc(p.bio||"No bio yet.")}</p><div>${tags||'<span class="tag">Add manga tags</span>'}</div>
- <button class="btn save" onclick="openProfile()">Customize Profile</button>
- </div>`;
+async function saveProfile(){
+ let username=$("pUsername").value.trim();if(!username)return notify("Username is required.");
+ let body={avatar_url:$("pAvatar").value.trim()||null,banner_url:$("pBanner").value.trim()||null,display_name:$("pDisplay").value.trim()||username,username,bio:$("pBio").value.trim(),tags:$("pTags").value.split(",").map(x=>x.trim()).filter(Boolean),is_public:$("pPublic").value==="true"};
+ const r=await sb.from("profiles").update(body).eq("id",user.id);if(r.error)return notify(r.error.message);await loadProfile();$("profileModal").classList.remove("open");page="profile";render();
 }
+async function friendsPage(){
+ $("view").innerHTML=`<div class="card"><h2 class="sectionTitle">Friends</h2><button class="primary" id="explorePeople">Explore people</button><div id="friendList"><p class="muted">Loading...</p></div></div>`;
+ const {data,error}=await sb.from("friend_requests").select("sender_id,receiver_id").or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`).eq("status","accepted");
+ if(error)return $("friendList").innerHTML=`<p class="msg">${esc(error.message)}</p>`;
+ let ids=(data||[]).map(x=>x.sender_id===user.id?x.receiver_id:x.sender_id);
+ if(!ids.length)$("friendList").innerHTML="<p class='muted'>No friends yet. Explore people to add some.</p>";
+ else{const r=await sb.from("profiles").select("username,display_name,avatar_url").in("id",ids);$("friendList").innerHTML=(r.data||[]).map(p=>`<div class="person"><div class="avatar">${p.avatar_url?`<img class="avatar" src="${esc(p.avatar_url)}">`:"♡"}</div><div><b>${esc(p.display_name||p.username)}</b><div class="muted">@${esc(p.username)}</div></div></div>`).join("")}
+ $("explorePeople").onclick=explorePeople;
+}
+async function explorePeople(){
+ $("view").innerHTML=`<div class="card"><h2 class="sectionTitle">Explore People</h2><input id="peopleSearch" placeholder="Search username"><div id="peopleList"></div></div>`;
+ const load=async()=>{let q=$("peopleSearch").value.trim();let req=sb.from("profiles").select("id,username,display_name,bio,avatar_url,tags,is_public").eq("is_public",true).neq("id",user.id).limit(30);if(q)req=req.ilike("username","%"+q+"%");let r=await req;if(r.error)return $("peopleList").textContent=r.error.message;$("peopleList").innerHTML=(r.data||[]).map(p=>`<div class="person"><div class="avatar">${p.avatar_url?`<img class="avatar" src="${esc(p.avatar_url)}">`:"♡"}</div><div style="flex:1"><b>${esc(p.display_name||p.username)}</b><div class="muted">@${esc(p.username)}</div><div>${(p.tags||[]).slice(0,4).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div></div><button class="ghost" data-add="${p.id}">Add friend</button></div>`).join("")||"<p class='muted'>No people found.</p>";document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>sendFriend(b.dataset.add))};
+ $("peopleSearch").oninput=load;await load();
+}
+async function sendFriend(id){const r=await sb.from("friend_requests").upsert({sender_id:user.id,receiver_id:id,status:"pending"},{onConflict:"sender_id,receiver_id"});notify(r.error?r.error.message:"Friend request sent.")}
+function addPage(){$("mangaModal").classList.add("open")}
+async function logout(){await sb.auth.signOut();user=null;profile=null;manga=[];$("app").classList.add("hidden");$("auth").classList.remove("hidden");authScreen("login")}
+$("search").oninput=render;
+$("sortBtn").onclick=()=>{manga.sort((a,b)=>String(a.title).localeCompare(String(b.title)));render()};
+$("fab").onclick=()=>openManga();
+$("friendTop").onclick=()=>{page="friends";render()};
+$("closeM").onclick=$("cancelM").onclick=()=>{$("mangaModal").classList.remove("open")};
+$("saveM").onclick=saveManga;
+$("closeP").onclick=$("cancelP").onclick=()=>{$("profileModal").classList.remove("open")};
+$("saveP").onclick=saveProfile;
+document.querySelectorAll(".nav").forEach(n=>n.onclick=()=>{page=n.dataset.page;if(page==="add")return openManga();render()});
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{status=t.dataset.status;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));render()});
 
-function renderFriends(v){
- v.innerHTML=`<div class="sectionTitle">Friends</div><div class="statBox">Friend requests and friends will appear here.</div>`;
-}
-
-function applyAccent(c){document.documentElement.style.setProperty("--a",c);document.documentElement.style.setProperty("--a2",hexToRgba(c,.13))}
-function hexToRgba(h,a){h=h.replace("#","");if(h.length!==6)return "rgba(112,172,244,.13)";let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return `rgba(${r},${g},${b},${a})`}
-function applyTheme(t){document.body.style.background=t==="dark"?"#101720":"var(--bg)";document.documentElement.style.setProperty("--bg",t==="dark"?"#101720":"#fbfdff");document.documentElement.style.setProperty("--card",t==="dark"?"#182330":"#fff");document.documentElement.style.setProperty("--text",t==="dark"?"#e7f1ff":"#29486b");document.documentElement.style.setProperty("--muted",t==="dark"?"#9db2c9":"#7690ae");document.documentElement.style.setProperty("--line",t==="dark"?"#2a3b4f":"#dcecff")}
-function openAdd(){$("addModal").classList.add("open")}
-function closeAdd(){$("addModal").classList.remove("open")}
-async function saveAdd(){
- const f=$("mCover").files[0], n=$("mName").value.trim(); if(!n||!f){alert("Please enter a manga name and choose a cover picture.");return}
- const reader=new FileReader();reader.onload=async e=>{try{await api("manga",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({user_id:session.user.id,name:n,status:$("mStatus").value,chapter:$("mChapter").value||"0",link:$("mLink").value.trim(),description:$("mDesc").value.trim(),cover_url:e.target.result,favorite:$("mFav").value==="yes"})});closeAdd();await loadManga()}catch(err){alert(err.message)}};reader.readAsDataURL(f)
-}
-window.toggleFav=async id=>{let x=items.find(a=>a.id===id);try{await api("manga?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({favorite:!x.favorite})});await loadManga()}catch(e){alert(e.message)}}
-window.deleteManga=async id=>{if(!confirm("Delete this manga?"))return;try{await api("manga?id=eq."+encodeURIComponent(id),{method:"DELETE"});await loadManga()}catch(e){alert(e.message)}}
-window.editManga=id=>{let x=items.find(a=>a.id===id);$("eId").value=x.id;$("eName").value=x.name;$("eStatus").value=x.status;$("eChapter").value=x.chapter;$("eLink").value=x.link||"";$("eDesc").value=x.description||"";$("editModal").classList.add("open")}
-async function saveEdit(){try{await api("manga?id=eq."+encodeURIComponent($("eId").value),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({name:$("eName").value.trim(),status:$("eStatus").value,chapter:$("eChapter").value,link:$("eLink").value.trim(),description:$("eDesc").value.trim()})});$("editModal").classList.remove("open");await loadManga()}catch(e){alert(e.message)}}
-async function logout(){session=null;items=[];localStorage.removeItem("mymanga_session");$("auth").classList.add("open");msg("");setAuthMode("login");}
-async function doAuth(){
+(async()=>{
  try{
-  const pass=$("aPass").value;
-  if(authMode==="login"){
-   const login=$("aLogin").value.trim();
-   if(!login||!pass)throw new Error("Enter your username/email and password.");
-   let email=login;
-   if(!login.includes("@")){
-    const rows=await api("profiles?select=username,email&username=eq."+encodeURIComponent(login)+"&limit=1");
-    if(!rows?.[0]?.email)throw new Error("Username not found.");
-    email=rows[0].email;
-   }
-   const d=await auth("token?grant_type=password",{email,password:pass});
-   session=d;localStorage.setItem("mymanga_session",JSON.stringify(session));$("auth").classList.remove("open");await loadProfile();await loadPeople();await loadManga();
-  }else{
-   const email=$("aEmail").value.trim(), username=$("aUser").value.trim(), repeat=$("aPass2").value;
-   if(!email||!username||!pass||!repeat)throw new Error("Fill in all fields.");
-   if(pass!==repeat)throw new Error("Passwords do not match.");
-   const d=await auth("signup",{email,password:pass,options:{data:{username},emailRedirectTo:"https://what839.github.io/mymanga/verification.html"}});
-   // Profile is created after email confirmation when a session exists; metadata keeps username attached to the account.
-   if(!d.session){msg("Account created. Check your email to verify your account, then log in.");return}
-   session=d;localStorage.setItem("mymanga_session",JSON.stringify(session));await createProfile(username);$("auth").classList.remove("open");await loadProfile();await loadPeople();await loadManga();
-  }
- }catch(e){msg(e.message)}
-}
-function setAuthMode(mode){
- authMode=mode;
- const signup=mode==="signup";
- $("authSub").textContent=signup?"Create your My Manga account":"Log in to sync your manga library";
- $("signupOnly").style.display=signup?"block":"none";
- $("loginEmail").style.display=signup?"none":"block";
- $("repeatWrap").style.display=signup?"block":"none";
- $("aPass").autocomplete=signup?"new-password":"current-password";
- $("authBtn").textContent=signup?"Create account":"Log In";
- $("switchAuth").textContent=signup?"Already have an account? Log in":"Create an account";
- $("aLogin").value="";$("aPass").value="";if($("aPass2"))$("aPass2").value="";
- msg("");
-}
-try{updates=JSON.parse(localStorage.getItem("mymanga_updates")||"[]")}catch(e){updates=[]}
-
-applyAccent(localStorage.getItem("accent")||"#70acf4");applyTheme(localStorage.getItem("theme")||"light");showVerificationBanner();
+  if(!window.supabase)throw Error("Supabase library did not load.");
+  const {data}=await sb.auth.getSession();
+  if(data.session){user=data.session.user;await loadProfile();await loadManga();showApp()}else authScreen("login");
+  sb.auth.onAuthStateChange(async(_e,s)=>{if(s&&!user){user=s.user;await loadProfile();await loadManga();showApp()}});
+ }catch(e){$("authForm").innerHTML=`<p class="msg">${esc(e.message)}</p><button class="primary" onclick="location.reload()">Reload</button>`}
+})();
 </script>
+</body>
+</html>
