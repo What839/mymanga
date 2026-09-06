@@ -129,6 +129,31 @@ nav{position:fixed;left:10px;right:10px;bottom:10px;height:64px;border:1px solid
 
 .uploadChoices{display:flex;gap:8px}
 .uploadChoices .fileBox{flex:1;text-align:center;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:11px;color:var(--muted);font-weight:600;cursor:pointer}
+
+/* ===== Friends + Messages ===== */
+.fabMsg{position:fixed;right:16px;bottom:84px;width:52px;height:52px;border:0;border-radius:50%;background:var(--a);color:#fff;z-index:7;box-shadow:0 7px 20px #70aaf555;display:grid;place-items:center}
+.msgIcon{width:22px;height:17px;border:2px solid currentColor;border-radius:7px;position:relative;display:block}
+.msgIcon:after{content:"";position:absolute;right:2px;bottom:-5px;border-width:5px 0 0 7px;border-style:solid;border-color:transparent transparent transparent currentColor;transform:rotate(15deg)}
+.msgPanel{display:none;position:fixed;right:14px;bottom:78px;width:min(390px,calc(100vw - 28px));height:min(620px,calc(100vh - 120px));background:var(--card);border:1px solid var(--line);border-radius:22px;z-index:40;box-shadow:0 18px 60px #244b7026;overflow:hidden}
+.msgPanel.open{display:flex;flex-direction:column}
+.msgHead{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;border-bottom:1px solid var(--line)}
+.msgHead strong{font-size:20px}.msgClose{border:0;background:var(--a2);color:var(--a);border-radius:10px;width:34px;height:34px;font-size:20px}
+.msgSearch{margin:10px 12px;width:calc(100% - 24px)}
+.msgBody{flex:1;overflow:auto;padding:0 12px 12px}
+.conv{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.conv:hover{background:var(--a2);border-radius:12px}.convAvatar{width:44px;height:44px;border-radius:50%;background:var(--a2);display:grid;place-items:center;color:var(--a);overflow:hidden;flex:none}.convAvatar img{width:100%;height:100%;object-fit:cover}
+.convInfo{min-width:0;flex:1}.convInfo strong{display:block;font-size:14px}.convInfo small{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat{display:none;position:absolute;inset:0;background:var(--card);flex-direction:column}.chat.open{display:flex}
+.chatHead{display:flex;align-items:center;gap:9px;padding:12px;border-bottom:1px solid var(--line)}
+.chatBack{border:0;background:var(--a2);color:var(--a);border-radius:9px;width:34px;height:34px}
+.chatMsgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:7px}
+.bubble{max-width:78%;padding:8px 11px;border-radius:15px;background:var(--a2);color:var(--text);align-self:flex-start;font-size:13px;word-break:break-word}
+.bubble.mine{background:var(--a);color:#fff;align-self:flex-end}
+.chatSend{display:flex;gap:7px;padding:10px;border-top:1px solid var(--line)}.chatSend input{flex:1}.chatSend button{width:auto;padding:10px 14px}
+.profileActions{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}.profileAction{border:1px solid var(--line);background:var(--a2);color:var(--a);border-radius:12px;padding:9px 14px;font-weight:600}.profileAction.primary{background:var(--a);color:#fff}
+.friendBadge{font-size:12px;color:var(--a);font-weight:600;margin-left:4px}
+.requestRow{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.requestRow .convInfo{flex:1}
+@media(max-width:600px){.msgPanel{right:8px;bottom:74px;width:calc(100vw - 16px);height:calc(100vh - 105px)}.fabMsg{right:12px;bottom:82px}}
 </style></head><body>
 <header><div class="top"><div class="brand">My Manga</div><div class="tools"><button class="tool" id="sortBtn">↕ Sort</button><button class="tool notifyTool" id="notifyBtn" title="Notifications"><span class="bellIcon" aria-label="Notifications"></span><span id="dot" style="display:none;color:var(--a);margin-left:3px">●</span></button><button class="tool" id="filterBtn">♡</button></div></div>
 <input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
@@ -165,9 +190,8 @@ function render(){const v=$("view");if(page==="stats")return renderStats(v);if(p
 function renderLibrary(v){let q=$("search").value.toLowerCase();let shown=items.filter(x=>active==="All"||x.status===active||(active==="Favorites"&&x.favorite)).filter(x=>x.name.toLowerCase().includes(q));let html='<div class="grid">';shown.forEach(x=>{html+=`<article class="card"><img class="cover" src="${esc(x.cover_url||"")}" alt=""><button class="heart" onclick="toggleFav('${x.id}')">${x.favorite?"♥":"♡"}</button><div class="title">${esc(x.name)}</div><div class="status">${esc(x.status||"")}</div><div class="meta">Chapter: ${esc(x.chapter||"0")}</div>${x.link?`<a class="linkBtn" href="${esc(x.link)}" target="_blank" rel="noopener">↗</a>`:""}${x.description?`<div class="desc">${esc(x.description)}</div>`:""}<button class="delete" onclick="editManga('${x.id}')">Edit</button> <button class="delete" onclick="deleteManga('${x.id}')">Delete</button></article>`});html+='<button class="card addCard" onclick="openAdd()"><span class="plus">+</span><span class="addText">Add Manga</span></button></div>';v.innerHTML=html}
 function renderStats(v){const total=items.length,read=items.filter(x=>x.status==="Reading").length,done=items.filter(x=>x.status==="Completed").length,fav=items.filter(x=>x.favorite).length;v.innerHTML=`<div class="sectionTitle">Statistics</div><div class="statBox"><div class="statNum">${total}</div>Total manga</div><div class="statBox"><div class="statNum">${read}</div>Reading</div><div class="statBox"><div class="statNum">${done}</div>Completed</div><div class="statBox"><div class="statNum">${fav}</div>Favorites</div>`}
 async function renderSettings(v){const verified=!!session?.user?.email_confirmed_at;let username=session?.user?.user_metadata?.username||"";try{const p=await api("profiles?select=username&id=eq."+encodeURIComponent(session.user.id));username=p?.[0]?.username||username}catch(e){}v.innerHTML=`<div class="sectionTitle">Settings</div><div class="statBox"><div class="settingRow"><span>Username</span><span class="userPill">@${esc(username||"not set")}</span></div><div class="settingRow"><span>Email</span><span class="userPill">${esc(session?.user?.email||"")}</span></div><div class="settingRow"><span>Email status</span><span class="userPill" style="${verified?"":"color:#b46b2c;background:#fff4e7"}">${verified?"Verified":"Not verified"}</span></div></div><div class="statBox"><div class="settingRow"><span>Appearance</span><select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="settingRow"><span>Accent color</span><input id="accent" class="colorInput" type="color" value="${localStorage.getItem("accent")||"#70acf4"}"></div><div style="padding-top:16px;display:flex;gap:8px;flex-wrap:wrap">
-<button class="btn save" id="shareLibrary" type="button">Share My Library</button>
 <button class="logout" id="logout">Log out</button>
-</div></div>`;$("theme").value=localStorage.getItem("theme")||"light";applyTheme($("theme").value);$("theme").onchange=e=>{localStorage.setItem("theme",e.target.value);applyTheme(e.target.value)};$("accent").onchange=e=>{localStorage.setItem("accent",e.target.value);applyAccent(e.target.value)};$("logout").onclick=logout;$("shareLibrary").onclick=shareLibrary}
+</div></div>`;$("theme").value=localStorage.getItem("theme")||"light";applyTheme($("theme").value);$("theme").onchange=e=>{localStorage.setItem("theme",e.target.value);applyTheme(e.target.value)};$("accent").onchange=e=>{localStorage.setItem("accent",e.target.value);applyAccent(e.target.value)};$("logout").onclick=logout}
 function applyAccent(c){document.documentElement.style.setProperty("--a",c);document.documentElement.style.setProperty("--a2",hexToRgba(c,.13))}function hexToRgba(h,a){h=h.replace("#","");if(h.length!==6)return "rgba(112,172,244,.13)";let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return `rgba(${r},${g},${b},${a})`}function applyTheme(t){document.documentElement.style.setProperty("--bg",t==="dark"?"#101720":"#fbfdff");document.documentElement.style.setProperty("--card",t==="dark"?"#182330":"#fff");document.documentElement.style.setProperty("--text",t==="dark"?"#e7f1ff":"#29486b");document.documentElement.style.setProperty("--muted",t==="dark"?"#9db2c9":"#7690ae");document.documentElement.style.setProperty("--line",t==="dark"?"#2a3b4f":"#dcecff")}
 function openAdd(){$('addModal').classList.add('open')}function closeAdd(){$('addModal').classList.remove('open')}
 async function saveAdd(){const f=$("mCover").files[0],n=$("mName").value.trim();if(!n||!f){alert("Please enter a manga name and choose a cover picture.");return}const reader=new FileReader();reader.onload=async e=>{try{await api("manga",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({user_id:session.user.id,name:n,status:$("mStatus").value,chapter:$("mChapter").value||"0",link:$("mLink").value.trim(),description:$("mDesc").value.trim(),cover_url:e.target.result,favorite:$("mFav").value==="yes"})});closeAdd();await loadManga()}catch(err){alert(err.message)}};reader.readAsDataURL(f)}
@@ -195,65 +219,19 @@ async function boot(){try{if(location.hash.startsWith("#shared=")&&renderSharedL
 sb.auth.onAuthStateChange((event,s)=>{session=s;if(s){$("auth").classList.remove("open");loadManga()}else if(event==="SIGNED_OUT")$("auth").classList.add("open")});
 applyAccent(localStorage.getItem("accent")||"#70acf4");applyTheme(localStorage.getItem("theme")||"light");boot();
 
-function encodeSharedLibrary(list){
-  const data=list.map(x=>({
-    name:x.name||"",
-    status:x.status||"",
-    chapter:x.chapter||"0",
-    link:x.link||"",
-    description:x.description||"",
-    favorite:!!x.favorite
-  }));
-  const raw=JSON.stringify(data);
-  const bytes=new TextEncoder().encode(raw);
-  let bin=""; for(const b of bytes) bin+=String.fromCharCode(b);
-  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-}
-function decodeSharedLibrary(token){
-  try{
-    const b64=token.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((token.length+3)%4);
-    const bin=atob(b64); const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
-    return JSON.parse(new TextDecoder().decode(bytes));
-  }catch(e){return null}
-}
-function renderSharedLibrary(){
-  const token=new URLSearchParams(location.hash.slice(1)).get("shared");
-  if(!token)return false;
-  const data=decodeSharedLibrary(token);
-  if(!data)return false;
-  $("auth").classList.remove("open");
-  $("view").innerHTML=`<div class="sectionTitle">Shared Library</div>
-    <div class="statBox" style="margin-bottom:12px">This is a shared copy of a manga list.</div>
-    <div class="grid">${data.map(x=>`<article class="card">
-      <div style="height:150px;border-radius:9px;background:var(--a2);display:flex;align-items:center;justify-content:center;font-size:38px;color:var(--a)">▤</div>
-      <div class="title">${esc(x.name)}</div>
-      <div class="status">${esc(x.status)}</div>
-      <div class="meta">Chapter: ${esc(x.chapter)}</div>
-      ${x.link?`<a class="linkBtn" href="${esc(x.link)}" target="_blank" rel="noopener">↗</a>`:""}
-      ${x.description?`<div class="desc">${esc(x.description)}</div>`:""}
-    </article>`).join("")}</div>`;
-  document.querySelectorAll(".nav").forEach(n=>n.classList.remove("active"));
-  return true;
-}
-async function shareLibrary(){
-  if(!items.length){alert("Your library is empty.");return}
-  const token=encodeSharedLibrary(items);
-  const url=location.origin+location.pathname+"#shared="+token;
-  try{
-    if(navigator.share){
-      await navigator.share({title:"My Manga Library",text:"My Manga Library",url});
-    }else{
-      await navigator.clipboard.writeText(url);
-      alert("Library link copied!");
-    }
-  }catch(e){
-    if(e?.name!=="AbortError"){
-      try{await navigator.clipboard.writeText(url);alert("Library link copied!")}
-      catch(_){prompt("Copy this library link:",url)}
-    }
-  }
-}
-</script></body></html>
+</script>
+<button class="fabMsg" id="fabMsg" title="Messages" aria-label="Messages"><span class="msgIcon"></span></button>
+<div class="msgPanel" id="msgPanel">
+  <div class="msgHead"><strong>Messages</strong><button class="msgClose" id="msgClose">×</button></div>
+  <input class="msgSearch" id="msgUserSearch" placeholder="Search people to message...">
+  <div class="msgBody" id="msgBody"><div class="statBox">Your conversations will appear here.</div></div>
+  <div class="chat" id="chat">
+    <div class="chatHead"><button class="chatBack" id="chatBack">←</button><div class="convAvatar" id="chatAvatar">?</div><div class="convInfo"><strong id="chatName">Conversation</strong><small id="chatUsername"></small></div></div>
+    <div class="chatMsgs" id="chatMsgs"></div>
+    <div class="chatSend"><input id="chatInput" placeholder="Message..."><button class="btn save" id="chatSendBtn">Send</button></div>
+  </div>
+</div>
+</body></html>
 <script>
 /* Keep legacy "plan to read" records under the single Want to Read status. */
 document.addEventListener("DOMContentLoaded",()=>{
@@ -317,9 +295,94 @@ window.renderPublicProfile=async function(username,push=true){
  page="publicProfile";const v=V();v.innerHTML=`<div class="mmProfilePage"><button class="mmBackBtn" id="mmBack">← Search</button><div class="statBox">Loading profile…</div></div>`;
  try{const r=await rows("profiles?select=id,username,display_name,bio,avatar_url,is_public,tags&username=eq."+encodeURIComponent(username)+"&limit=1"),p=r?.[0];if(!p||p.is_public===false){v.innerHTML="<div class='mmProfilePage'><button class='mmBackBtn' onclick='renderPeoplePage()'>← Search</button><div class='statBox'>This profile is private or doesn't exist.</div></div>";return}
  const books=(await rows("manga?select=*&user_id=eq."+encodeURIComponent(p.id)+"&order=created_at.desc")||[]).map(b=>({...b,status:/plan\s*to\s*read/i.test(b.status||"")||/on\s*hold/i.test(b.status||"")?"Want to Read":b.status})),tags=Array.isArray(p.tags)?p.tags:[],sts=["All","Reading","Completed","Want to Read"];
- v.innerHTML=`<div class="mmProfilePage"><button class="mmBackBtn" id="mmBack">← Search</button><section class="mmProfileHero"><div class="mmProfileThumb"></div><div class="mmProfileHead"><div class="mmProfileAvatar">${p.avatar_url?`<img src="${esc2(p.avatar_url)}">`:esc2((p.display_name||p.username||"?")[0].toUpperCase())}</div><div class="mmProfileName">${esc2(p.display_name||p.username)}</div><div class="mmProfileUsername">@${esc2(p.username)}</div>${p.bio?`<div class="mmProfileBio">${esc2(p.bio)}</div>`:""}<div class="mmTags">${tags.map(t=>`<span class="mmTag">${esc2(t)}</span>`).join("")}</div></div></section><div class="mmStatusTabs">${sts.map((x,i)=>`<button class="mmStatusTab ${i?"":"active"}" data-ps="${esc2(x)}">${esc2(x)}</button>`).join("")}</div><div id="mmPublicGrid" class="mmPublicGrid"></div></div>`;
- const grid=$("mmPublicGrid");function draw(st){document.querySelectorAll("[data-ps]").forEach(b=>b.classList.toggle("active",b.dataset.ps===st));const a=st==="All"?books:books.filter(b=>b.status===st);grid.innerHTML=a.length?a.map(b=>`<article class="mmPublicCard">${b.cover_url?`<img src="${esc2(b.cover_url)}">`:"<div style='aspect-ratio:.72;background:var(--a2);border-radius:10px'></div>"}<strong>${esc2(b.name||b.title||"Manga")}</strong><small>${esc2(b.status||"")} · Chapter ${esc2(b.chapter||"0")}</small></article>`).join(""):"<div class='statBox' style='grid-column:1/-1'>No manga in this list.</div>"}document.querySelectorAll("[data-ps]").forEach(b=>b.onclick=()=>draw(b.dataset.ps));$("mmBack").onclick=()=>{history.pushState({page:"people"},"","/mymanga/");renderPeoplePage()};draw("All");
+ v.innerHTML=`<div class="mmProfilePage"><button class="mmBackBtn" id="mmBack">← Search</button><section class="mmProfileHero"><div class="mmProfileThumb"></div><div class="mmProfileHead"><div class="mmProfileAvatar">${p.avatar_url?`<img src="${esc2(p.avatar_url)}">`:esc2((p.display_name||p.username||"?")[0].toUpperCase())}</div><div class="mmProfileName">${esc2(p.display_name||p.username)}</div><div class="mmProfileUsername">@${esc2(p.username)}</div>${p.bio?`<div class="mmProfileBio">${esc2(p.bio)}</div>`:""}<div class="profileActions"><button class="profileAction primary" id="addFriendBtn">Add Friend</button><button class="profileAction" id="profileMessageBtn">Message</button></div><div class="mmTags">${tags.map(t=>`<span class="mmTag">${esc2(t)}</span>`).join("")}</div></div></section><div class="mmStatusTabs">${sts.map((x,i)=>`<button class="mmStatusTab ${i?"":"active"}" data-ps="${esc2(x)}">${esc2(x)}</button>`).join("")}</div><div id="mmPublicGrid" class="mmPublicGrid"></div></div>`;
+ const friendBtn=$("addFriendBtn"), profileMsgBtn=$("profileMessageBtn");
+async function friendState(){
+  if(!session?.user?.id || session.user.id===p.id){ if(friendBtn) friendBtn.style.display="none"; return; }
+  try{
+    const q=await rows("friend_requests?select=id,requester_id,addressee_id,status&or=(and(requester_id.eq."+encodeURIComponent(session.user.id)+",addressee_id.eq."+encodeURIComponent(p.id)+"),and(requester_id.eq."+encodeURIComponent(p.id)+",addressee_id.eq."+encodeURIComponent(session.user.id)+"))");
+    const f=(q||[])[0];
+    if(f?.status==="accepted") friendBtn.textContent="Friends";
+    else if(f?.requester_id===session.user.id) friendBtn.textContent="Request Sent";
+    else if(f?.addressee_id===session.user.id) friendBtn.textContent="Accept Friend";
+  }catch(e){ if(friendBtn) friendBtn.textContent="Add Friend"; }
+}
+if(friendBtn){
+  friendBtn.onclick=async()=>{
+    try{
+      if(friendBtn.textContent==="Friends") return;
+      if(friendBtn.textContent==="Accept Friend"){
+        const q=await rows("friend_requests?select=id&requester_id=eq."+encodeURIComponent(p.id)+"&addressee_id=eq."+encodeURIComponent(session.user.id)+"&status=eq.pending&limit=1");
+        if(q?.[0]) await api("friend_requests?id=eq."+encodeURIComponent(q[0].id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({status:"accepted"})});
+      }else{
+        await api("friend_requests",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({requester_id:session.user.id,addressee_id:p.id,status:"pending"})});
+      }
+      friendState();
+    }catch(e){alert("Friend feature needs its Supabase table set up first.");}
+  };
+}
+if(profileMsgBtn) profileMsgBtn.onclick=()=>openChatWith(p);
+friendState();
+const grid=$("mmPublicGrid");function draw(st){document.querySelectorAll("[data-ps]").forEach(b=>b.classList.toggle("active",b.dataset.ps===st));const a=st==="All"?books:books.filter(b=>b.status===st);grid.innerHTML=a.length?a.map(b=>`<article class="mmPublicCard">${b.cover_url?`<img src="${esc2(b.cover_url)}">`:"<div style='aspect-ratio:.72;background:var(--a2);border-radius:10px'></div>"}<strong>${esc2(b.name||b.title||"Manga")}</strong><small>${esc2(b.status||"")} · Chapter ${esc2(b.chapter||"0")}</small></article>`).join(""):"<div class='statBox' style='grid-column:1/-1'>No manga in this list.</div>"}document.querySelectorAll("[data-ps]").forEach(b=>b.onclick=()=>draw(b.dataset.ps));$("mmBack").onclick=()=>{history.pushState({page:"people"},"","/mymanga/");renderPeoplePage()};draw("All");
  }catch(e){v.innerHTML="<div class='statBox'>Couldn't load this profile.</div>"}};
+
+let activeChatUser=null;
+async function searchProfilesForMessage(q){
+  const body=$("msgBody"); if(!body)return;
+  q=(q||"").trim().replace(/^@/,"");
+  if(!q){loadConversations();return}
+  try{
+    const r=await api("profiles?select=id,username,display_name,avatar_url,is_public&username=ilike."+encodeURIComponent("%"+q+"%")+"&limit=20");
+    const a=(r||[]).filter(x=>x.is_public!==false && x.id!==session?.user?.id);
+    body.innerHTML=a.length?a.map(p=>`<div class="conv" data-msg-user="${esc2(p.id)}" data-msg-name="${esc2(p.display_name||p.username)}" data-msg-username="${esc2(p.username)}" data-msg-avatar="${esc2(p.avatar_url||"")}"><div class="convAvatar">${p.avatar_url?`<img src="${esc2(p.avatar_url)}">`:esc2((p.display_name||p.username||"?")[0].toUpperCase())}</div><div class="convInfo"><strong>${esc2(p.display_name||p.username)}</strong><small>@${esc2(p.username)}</small></div></div>`).join(""):"<div class='statBox'>No public users found.</div>";
+  }catch(e){body.innerHTML="<div class='statBox'>Search isn't available yet.</div>";}
+}
+async function loadConversations(){
+  const body=$("msgBody"); if(!body)return;
+  body.innerHTML="<div class='statBox'>Loading messages…</div>";
+  try{
+    const sent=await api("messages?select=receiver_id,created_at&sender_id=eq."+encodeURIComponent(session.user.id)+"&order=created_at.desc&limit=100");
+    const received=await api("messages?select=sender_id,created_at&receiver_id=eq."+encodeURIComponent(session.user.id)+"&order=created_at.desc&limit=100");
+    const ids=[...(sent||[]).map(x=>x.receiver_id),...(received||[]).map(x=>x.sender_id)].filter(Boolean);
+    const unique=[...new Set(ids)];
+    if(!unique.length){body.innerHTML="<div class='statBox'>No conversations yet. Search for someone above to start one.</div>";return}
+    const profiles=[];
+    for(const id of unique){try{const r=await api("profiles?select=id,username,display_name,avatar_url&id=eq."+encodeURIComponent(id)+"&limit=1");if(r?.[0])profiles.push(r[0])}catch(e){}}
+    body.innerHTML=profiles.map(p=>`<div class="conv" data-msg-user="${esc2(p.id)}" data-msg-name="${esc2(p.display_name||p.username)}" data-msg-username="${esc2(p.username)}" data-msg-avatar="${esc2(p.avatar_url||"")}"><div class="convAvatar">${p.avatar_url?`<img src="${esc2(p.avatar_url)}">`:esc2((p.display_name||p.username||"?")[0].toUpperCase())}</div><div class="convInfo"><strong>${esc2(p.display_name||p.username)}</strong><small>@${esc2(p.username)}</small></div></div>`).join("");
+  }catch(e){body.innerHTML="<div class='statBox'>Messages need the Supabase messages table set up first.</div>";}
+}
+async function openChatWith(p){
+  if(!session?.user?.id)return;
+  activeChatUser=p;
+  $("msgPanel").classList.add("open");$("chat").classList.add("open");
+  $("chatName").textContent=p.display_name||p.username;$("chatUsername").textContent="@"+p.username;
+  $("chatAvatar").innerHTML=p.avatar_url?`<img src="${esc2(p.avatar_url)}">`:esc2((p.display_name||p.username||"?")[0].toUpperCase());
+  await loadChatMessages();
+}
+async function loadChatMessages(){
+  const box=$("chatMsgs"); if(!box||!activeChatUser)return;
+  try{
+    const a=await api("messages?select=id,sender_id,receiver_id,body,created_at&or=(and(sender_id.eq."+encodeURIComponent(session.user.id)+",receiver_id.eq."+encodeURIComponent(activeChatUser.id)+"),and(sender_id.eq."+encodeURIComponent(activeChatUser.id)+",receiver_id.eq."+encodeURIComponent(session.user.id)+"))&order=created_at.asc");
+    box.innerHTML=(a||[]).map(m=>`<div class="bubble ${m.sender_id===session.user.id?"mine":""}">${esc2(m.body)}</div>`).join("")||"<div class='statBox'>Start the conversation.</div>";
+    box.scrollTop=box.scrollHeight;
+  }catch(e){box.innerHTML="<div class='statBox'>Messages need the Supabase messages table set up first.</div>";}
+}
+async function sendChatMessage(){
+  const input=$("chatInput"),body=input.value.trim();if(!body||!activeChatUser)return;
+  try{await api("messages",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({sender_id:session.user.id,receiver_id:activeChatUser.id,body})});input.value="";await loadChatMessages();}catch(e){alert("Couldn't send. The messages table may not be set up yet.");}
+}
+window.openChatWith=openChatWith;
+document.addEventListener("click",e=>{
+  const c=e.target.closest("[data-msg-user]");
+  if(c) openChatWith({id:c.dataset.msgUser,display_name:c.dataset.msgName,username:c.dataset.msgUsername,avatar_url:c.dataset.msgAvatar});
+});
+$("fabMsg")?.addEventListener("click",()=>{$("msgPanel").classList.toggle("open");$("chat").classList.remove("open");if($("msgPanel").classList.contains("open"))loadConversations()});
+$("msgClose")?.addEventListener("click",()=>$("msgPanel").classList.remove("open"));
+$("chatBack")?.addEventListener("click",()=>{$("chat").classList.remove("open");loadConversations()});
+$("chatSendBtn")?.addEventListener("click",sendChatMessage);
+$("chatInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")sendChatMessage()});
+let msgSearchTimer; $("msgUserSearch")?.addEventListener("input",e=>{clearTimeout(msgSearchTimer);msgSearchTimer=setTimeout(()=>searchProfilesForMessage(e.target.value),250)});
+
 document.addEventListener("click",e=>{const b=e.target.closest("[data-page='people']");if(b){e.preventDefault();document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderPeoplePage();return}const p=e.target.closest("[data-profile-name]");if(p){renderPublicProfile(p.dataset.profileName,true)}});
 window.addEventListener("popstate",()=>{const m=location.pathname.match(/\/mymanga\/profile\/([^/]+)/);if(m)renderPublicProfile(decodeURIComponent(m[1]),false);else renderPeoplePage()});
 document.addEventListener("DOMContentLoaded",()=>{const m=location.pathname.match(/\/mymanga\/profile\/([^/]+)/);if(m)setTimeout(()=>renderPublicProfile(decodeURIComponent(m[1]),false),0)});
