@@ -61,8 +61,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px
 
 <div class="modal" id="editModal"><div class="sheet"><h2>Edit Manga</h2><input id="eId" type="hidden"><label>Manga Name</label><input id="eName"><div class="row"><div><label>Status</label><select id="eStatus"><option>Reading</option><option>Completed</option><option>On Hold</option><option>Dropped</option><option>Plan to Read</option></select></div><div><label>Chapter</label><input id="eChapter" type="number" min="0"></div></div><label>Link</label><input id="eLink" type="url"><label>Description</label><textarea id="eDesc"></textarea><div class="actions"><button class="btn cancel" id="cancelEdit">Cancel</button><button class="btn save" id="saveEdit">Save Changes</button></div></div></div>
 
-<div class="auth open" id="auth"><div class="authbox"><div class="authTitle">My Manga</div><div class="authSub" id="authSub">Log in to sync your manga library</div><label>Email</label><input id="aEmail" type="email" placeholder="you@example.com"><label>Password</label><div class="pwWrap"><input id="aPass" type="password" placeholder="Password"><button type="button" class="pwEye" data-target="aPass"></button></div><label>Password</label><div class="pwWrap"><input id="aPass2" type="password" placeholder="Repeat your password" autocomplete="new-password"><button type="button" class="pwEye" data-target="aPass2"></button></div><label id="aUserLabel" style="display:none">Username</label><input id="aUser" style="display:none" placeholder="Username"><div class="authMsg" id="authMsg"></div><button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button><button class="authSwitch" id="switchAuth">Create an account</button><button class="authSwitch" id="forgot">Forgot password?</button></div></div>
-
+<div class="auth open" id="auth"><div class="authbox"><div class="authTitle">My Manga</div><div class="authSub" id="authSub">Log in to sync your manga library</div><label>Email or username</label><input id="aEmail" type="text" placeholder="Username or email" autocomplete="username"><label>Password</label><div class="pwWrap"><input id="aPass" type="password" placeholder="Password" autocomplete="current-password"><button type="button" class="pwEye" data-target="aPass"><span class="eyeIcon"></span></button></div><div id="repeatWrap" style="display:none"><label>Repeat password</label><div class="pwWrap"><input id="aPass2" type="password" placeholder="Repeat your password" autocomplete="new-password"><button type="button" class="pwEye" data-target="aPass2"><span class="eyeIcon"></span></button></div></div><label id="aUserLabel" style="display:none">Username</label><input id="aUser" style="display:none" placeholder="Username" autocomplete="username"><div class="authMsg" id="authMsg"></div><button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button><button class="authSwitch" id="switchAuth">Create an account</button><button class="authSwitch" id="forgot">Forgot password?</button></div></div>
 <script>
 const SUPABASE_URL="https://anjwxsqcvhpzoillktmy.supabase.co";
 const SUPABASE_KEY="sb_publishable_pas11tpmdKbIMk8NyOTCRw_O0QAUPnt";
@@ -81,24 +80,36 @@ async function auth(path,body){
  const r=await fetch(SUPABASE_URL+"/auth/v1/"+path,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
  const data=await r.json(); if(!r.ok)throw new Error(data.error_description||data.msg||data.message||"Authentication failed"); return data;
 }
+function persistSession(d){
+ if(!d)return;
+ session=d;
+ try{localStorage.setItem("mymanga_session",JSON.stringify(d));}catch(e){}
+}
+function clearStoredSession(){try{localStorage.removeItem("mymanga_session")}catch(e){}}
+async function restoreSession(){
+ try{
+  const raw=localStorage.getItem("mymanga_session"); if(!raw)return false;
+  const old=JSON.parse(raw);
+  if(!old?.refresh_token)return false;
+  const d=await auth("token?grant_type=refresh_token",{refresh_token:old.refresh_token});
+  persistSession(d); return true;
+ }catch(e){clearStoredSession();return false}
+}
 async function loadProfile(){
  try{
   const p=await api("profiles?select=*&id=eq."+encodeURIComponent(session.user.id));
   localProfile=p?.[0]||null;
-  if(!localProfile && session?.user?.user_metadata?.username){
-   await createProfile(session.user.user_metadata.username);
-   const pp=await api("profiles?select=*&id=eq."+encodeURIComponent(session.user.id));
-   localProfile=pp?.[0]||null;
-  }
-  if(localProfile?.username){$("authSub").textContent="Welcome back, "+localProfile.username}
- }catch(e){}
+  const meta=session?.user?.user_metadata||{};
+  if(!localProfile && meta.username){await createProfile(meta.username);const pp=await api("profiles?select=*&id=eq."+encodeURIComponent(session.user.id));localProfile=pp?.[0]||null;}
+  if(localProfile?.username)$("authSub").textContent="Welcome back, "+localProfile.username;
+ }catch(e){console.warn("Profile load:",e)}
 }
 async function loadManga(){items=await api("manga?select=*&order=created_at.desc");render()}
 async function createProfile(username){
  try{
-  const body={id:session.user.id,username,display_name:username,bio:"",avatar_emoji:"♡",profile_color:"#e8f3ff"};
-  await api("profiles",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify(body)});
- }catch(e){}
+  const body={id:session.user.id,username:username,display_name:username,bio:"",tags:[],is_public:true,avatar_emoji:"♡",profile_color:"#e8f3ff"};
+  await api("profiles",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(body)});
+ }catch(e){console.warn("Profile create:",e)}
 }
 function render(){
  const v=$("view");
@@ -162,12 +173,12 @@ async function searchPeople(){
  const q=$("friendSearch").value.trim().replace(/^@/,"");
  if(!q){renderHome($("view"));return}
  try{
-  const r=await api("profiles?select=*&username=ilike."+encodeURIComponent("%"+q+"%")+"&limit=20");
+  const r=await api("profiles?select=*&is_public=eq.true&username=ilike."+encodeURIComponent("%"+q+"%")+"&limit=20");
   peopleCache=(r||[]).filter(x=>x.is_public!==false);renderHome($("view"));
  }catch(e){alert(e.message)}
 }
 async function loadPeople(){
- try{peopleCache=await api("profiles?select=*&order=created_at.desc&limit=8")||[]}catch(e){peopleCache=[]}
+ try{peopleCache=(await api("profiles?select=*&is_public=eq.true&order=created_at.desc&limit=8"))||[]}catch(e){peopleCache=[]}
 }
 window.sendFriend=async id=>{
  try{
@@ -175,40 +186,47 @@ window.sendFriend=async id=>{
   alert("Friend request sent!"); 
  }catch(e){alert(e.message)}
 }
-function openProfile(){
+async function uploadProfileImage(file,type){
+ if(!file||!session?.user?.id)return null;
+ if(!/^image\\/(png|jpe?g|webp|gif)$/i.test(file.type))throw new Error("Please choose a PNG, JPG, WEBP, or GIF image.");
+ if(file.size>5*1024*1024)throw new Error("Image must be 5 MB or smaller.");
+ const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+ const path=session.user.id+"/"+type+"-"+Date.now()+"."+ext;
+ const r=await fetch(SUPABASE_URL+"/storage/v1/object/profile-images/"+path,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token,"Content-Type":file.type,"x-upsert":"true"},body:file});
+ const text=await r.text();if(!r.ok)throw new Error(text||"Image upload failed.");
+ return SUPABASE_URL+"/storage/v1/object/public/profile-images/"+path;
+}
+async function openProfile(){
  const p=localProfile||{};
  const m=document.createElement("div");m.className="modal open";m.id="profileModal";
  const tags=(p.tags||[]).join(", ");
  m.innerHTML=`<div class="sheet"><h2>Customize Profile</h2>
- <label>Profile picture</label><input id="pAvatar" type="file" accept="image/*">
- <label>Profile thumbnail</label><input id="pThumb" type="file" accept="image/*">
+ <label>Profile picture</label><input id="pAvatar" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+ <label>Profile thumbnail</label><input id="pThumb" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
  <label>Username</label><input id="pUser" value="${esc(p.username||"")}">
  <label>Display name</label><input id="pDisplay" value="${esc(p.display_name||p.username||"")}">
  <label>Bio</label><textarea id="pBio" placeholder="Tell people about your manga taste...">${esc(p.bio||"")}</textarea>
  <label>Manga tags</label><input id="pTags" placeholder="GL, BL, Yuri, Yaoi, Romance..." value="${esc(tags)}">
  <label>Profile visibility</label><select id="pPublic"><option value="true">Public profile</option><option value="false">Private profile</option></select>
  <div class="actions"><button class="btn cancel" onclick="document.getElementById('profileModal').remove()">Cancel</button><button class="btn save" id="saveProfile">Save Profile</button></div></div>`;
- document.body.appendChild(m);
- $("pPublic").value=String(p.is_public!==false);
+ document.body.appendChild(m);$("pPublic").value=String(p.is_public!==false);
  $("saveProfile").onclick=async()=>{
+  const btn=$("saveProfile");btn.disabled=true;btn.textContent="Saving...";
   try{
-   const username=$("pUser").value.trim().toLowerCase().replace(/[^a-z0-9_]/g,"");
-   if(!username)throw new Error("Username is required.");
-   const body={username,display_name:$("pDisplay").value.trim()||username,bio:$("pBio").value.trim(),
-    tags:$("pTags").value.split(",").map(x=>x.trim()).filter(Boolean).slice(0,20),
-    is_public:$("pPublic").value==="true"};
-   // Image uploads require a configured Storage bucket; keep the selected files ready
-   // for the next storage step rather than pretending a local file is uploaded.
+   const username=$("pUser").value.trim().toLowerCase().replace(/[^a-z0-9_]/g,"");if(!username)throw new Error("Username is required.");
+   const body={username,display_name:$("pDisplay").value.trim()||username,bio:$("pBio").value.trim(),tags:$("pTags").value.split(",").map(x=>x.trim()).filter(Boolean).slice(0,20),is_public:$("pPublic").value==="true"};
+   const av=await uploadProfileImage($("pAvatar").files[0],"avatar");if(av)body.avatar_url=av;
+   const th=await uploadProfileImage($("pThumb").files[0],"thumbnail");if(th)body.thumbnail_url=th;
    await api("profiles?id=eq."+encodeURIComponent(session.user.id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(body)});
-   localProfile=Object.assign(localProfile||{},body);m.remove();renderSettings($("view"));loadPeople();
-  }catch(e){alert(e.message)}
+   localProfile=Object.assign(localProfile||{},body);m.remove();render();
+  }catch(e){alert(e.message);btn.disabled=false;btn.textContent="Save Profile"}
  };
 }
 function renderProfile(v){
  const p=localProfile||{};
  if(p.is_public===false && p.id!==session?.user?.id){v.innerHTML=`<div class="statBox">This profile is private.</div>`;return}
  const tags=(p.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("");
- v.innerHTML=`<div class="profileHero">
+ v.innerHTML=`<div class="profileHero">${p.thumbnail_url?`<img class="profileThumb" src="${esc(p.thumbnail_url)}" alt="">`:""}
  <div class="avatarBig" style="background:${esc(p.profile_color||"#e8f3ff")}">${p.avatar_url?`<img src="${esc(p.avatar_url)}">`:(p.avatar_emoji||"♡")}</div>
  <h2>${esc(p.display_name||p.username||"My Profile")}</h2><div class="meta">@${esc(p.username||"not set")}</div>
  <p>${esc(p.bio||"No bio yet.")}</p><div>${tags||'<span class="tag">Add manga tags</span>'}</div>
@@ -216,9 +234,23 @@ function renderProfile(v){
  </div>`;
 }
 
-function renderFriends(v){
- v.innerHTML=`<div class="sectionTitle">Friends</div><div class="statBox">Friend requests and friends will appear here.</div>`;
+async function renderFriends(v){
+ v.innerHTML=`<div class="sectionTitle">Friends</div><div id="friendArea" class="statBox">Loading friends...</div>`;
+ try{
+  const me=session.user.id;
+  const incoming=await api("friend_requests?select=*&receiver_id=eq."+me+"&status=eq.pending&order=created_at.desc");
+  const accepted=await api("friend_requests?select=*&status=eq.accepted&or="+encodeURIComponent("(sender_id.eq."+me+",receiver_id.eq."+me+")"));
+  const ids=[...(incoming||[]).map(x=>x.sender_id),...(accepted||[]).map(x=>x.sender_id===me?x.receiver_id:x.sender_id)];
+  const uniq=[...new Set(ids)].filter(x=>x!==me);
+  const people=uniq.length?await api("profiles?select=id,username,display_name,avatar_url&id=in.("+uniq.join(",")+")"):[]; 
+  const map=Object.fromEntries((people||[]).map(x=>[x.id,x]));
+  const reqHtml=(incoming||[]).map(r=>{const x=map[r.sender_id]||{};return `<div class="friendCard"><div class="avatarSmall">${x.avatar_url?`<img src="${esc(x.avatar_url)}">`:""}</div><div class="personInfo"><strong>${esc(x.display_name||x.username||"User")}</strong><div>@${esc(x.username||"")}</div></div><button class="delete" onclick="acceptFriend('${r.id}')">Accept</button></div>`}).join("");
+  const friendHtml=(accepted||[]).map(r=>{const id=r.sender_id===me?r.receiver_id:r.sender_id,x=map[id]||{};return `<div class="friendCard"><div class="avatarSmall">${x.avatar_url?`<img src="${esc(x.avatar_url)}">`:""}</div><div class="personInfo"><strong>${esc(x.display_name||x.username||"User")}</strong><div>@${esc(x.username||"")}</div></div><button class="delete" onclick="openChat('${id}','${esc(x.display_name||x.username||"Friend")}')">Message</button></div>`}).join("");
+  v.innerHTML=`<div class="sectionTitle">Friends</div>${reqHtml?`<div class="statBox"><strong>Friend requests</strong>${reqHtml}</div>`:""}<div class="statBox"><strong>Your friends</strong>${friendHtml||"<div style='padding-top:12px;color:var(--muted)'>No friends yet. Find people in Explore.</div>"}</div>`;
+ }catch(e){v.innerHTML=`<div class="statBox">Couldn't load friends right now.</div>`}
 }
+window.acceptFriend=async id=>{try{await api("friend_requests?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({status:"accepted"})});render()}catch(e){alert(e.message)}};
+window.sendFriend=async id=>{try{await api("friend_requests",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({sender_id:session.user.id,receiver_id:id,status:"pending"})});alert("Friend request sent.");}catch(e){alert(e.message)}};
 
 function applyAccent(c){document.documentElement.style.setProperty("--a",c);document.documentElement.style.setProperty("--a2",hexToRgba(c,.13))}
 function hexToRgba(h,a){h=h.replace("#","");if(h.length!==6)return "rgba(112,172,244,.13)";let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return `rgba(${r},${g},${b},${a})`}
@@ -233,18 +265,53 @@ window.toggleFav=async id=>{let x=items.find(a=>a.id===id);try{await api("manga?
 window.deleteManga=async id=>{if(!confirm("Delete this manga?"))return;try{await api("manga?id=eq."+encodeURIComponent(id),{method:"DELETE"});await loadManga()}catch(e){alert(e.message)}}
 window.editManga=id=>{let x=items.find(a=>a.id===id);$("eId").value=x.id;$("eName").value=x.name;$("eStatus").value=x.status;$("eChapter").value=x.chapter;$("eLink").value=x.link||"";$("eDesc").value=x.description||"";$("editModal").classList.add("open")}
 async function saveEdit(){try{await api("manga?id=eq."+encodeURIComponent($("eId").value),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({name:$("eName").value.trim(),status:$("eStatus").value,chapter:$("eChapter").value,link:$("eLink").value.trim(),description:$("eDesc").value.trim()})});$("editModal").classList.remove("open");await loadManga()}catch(e){alert(e.message)}}
-async function logout(){session=null;items=[];$("auth").classList.add("open");msg("");}
+async function logout(){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+(session?.access_token||"")}})}catch(e){} clearStoredSession();session=null;items=[];$("auth").classList.add("open");msg("");}
 async function doAuth(){
  try{
-  const email=$("aEmail").value.trim(),pass=$("aPass").value;
-  if(!email||!pass)throw new Error("Enter your email and password.");
-  if(authMode==="login"){const d=await auth("token?grant_type=password",{email,password:pass});session=d;$("auth").classList.remove("open");await loadProfile();await loadPeople();await loadManga()}
-  else{const repeat=$("aPass2")?.value||"";if(pass!==repeat){alert("Passwords do not match.");return}const d=await auth("signup",{email,password:pass,options:{emailRedirectTo:"https://what839.github.io/mymanga/"}});if(!d.session)throw new Error("Account created. Check your email to confirm it, then log in.");session=d;$("auth").classList.remove("open");await createProfile($("aUser").value.trim()||email.split("@")[0]);await loadProfile();await loadPeople();await loadManga()}
+  const loginValue=$("aEmail").value.trim(), pass=$("aPass").value;
+  if(!loginValue||!pass)throw new Error("Enter your username/email and password.");
+  if(authMode==="login"){
+   let email=loginValue;
+   if(!loginValue.includes("@")){
+    const rows=await api("profiles?select=id,username&id=eq."+encodeURIComponent(loginValue)+"&limit=1");
+    if(!rows?.length)throw new Error("Username not found.");
+    const uid=rows[0].id;
+    const ur=await fetch(SUPABASE_URL+"/auth/v1/admin/users/"+encodeURIComponent(uid),{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}});
+    if(ur.ok){const ud=await ur.json();email=ud.email||""}
+    if(!email)throw new Error("Please use your email to log in.");
+   }
+   const d=await auth("token?grant_type=password",{email,password:pass});
+   persistSession(d);$("auth").classList.remove("open");await loadProfile();await loadPeople();await loadManga();
+  }else{
+   const username=$("aUser").value.trim().toLowerCase().replace(/[^a-z0-9_]/g,"");
+   const repeat=$("aPass2").value;
+   if(!username)throw new Error("Choose a username.");
+   if(pass!==repeat)throw new Error("Passwords do not match.");
+   const d=await auth("signup",{email:loginValue,password:pass,options:{data:{username},emailRedirectTo:"https://what839.github.io/mymanga/verification.html"}});
+   if(d.session){
+    persistSession(d);await createProfile(username);await loadProfile();$("auth").classList.remove("open");await loadPeople();await loadManga();
+   }else{
+    $("authSub").textContent="Check your email to verify your account";
+    msg("Account created. Check your email, then return here and log in.");
+   }
+  }
  }catch(e){msg(e.message)}
 }
-function setAuthMode(mode){authMode=mode;$("authSub").textContent=mode==="login"?"Log in to sync your manga library":"Create an account to sync your manga library";$("authBtn").textContent=mode==="login"?"Log In":"Create Account";$("switchAuth").textContent=mode==="login"?"Create an account":"Already have an account? Log in";$("aUser").style.display=mode==="login"?"none":"block";$("aUserLabel").style.display=mode==="login"?"none":"block";$("forgot").style.display=mode==="login"?"block":"none";msg("")}
+function setAuthMode(mode){
+ authMode=mode;
+ $("authSub").textContent=mode==="login"?"Log in to sync your manga library":"Create an account to sync your manga library";
+ $("authBtn").textContent=mode==="login"?"Log In":"Create Account";
+ $("switchAuth").textContent=mode==="login"?"Create an account":"Already have an account? Log in";
+ $("aEmail").placeholder=mode==="login"?"Username or email":"Email";
+ $("aEmail").type=mode==="login"?"text":"email";
+ $("aUser").style.display=mode==="login"?"none":"block";
+ $("aUserLabel").style.display=mode==="login"?"none":"block";
+ $("repeatWrap").style.display=mode==="login"?"none":"block";
+ $("forgot").style.display=mode==="login"?"block":"none";
+ msg("");
+}
 $("authBtn").onclick=doAuth;$("switchAuth").onclick=()=>setAuthMode(authMode==="login"?"signup":"login");
-$("forgot").onclick=async()=>{const e=$("aEmail").value.trim();if(!e){msg("Enter your email first.");return}try{await auth("recover",{email:e,options:{redirect_to:"https://what839.github.io/mymanga/reset.html"}});msg("Password reset email sent.")}catch(x){msg(x.message)}};
+$("forgot").onclick=()=>{location.href="https://what839.github.io/mymanga/forgot-password.html"};if(!e){msg("Enter your email first.");return}try{await auth("recover",{email:e,options:{redirect_to:"https://what839.github.io/mymanga/reset.html"}});msg("Password reset email sent.")}catch(x){msg(x.message)}};
 $("saveAdd").onclick=saveAdd;$("cancelAdd").onclick=closeAdd;$("saveEdit").onclick=saveEdit;$("cancelEdit").onclick=()=>$("editModal").classList.remove("open");$("fab").onclick=openAdd;$("navAdd").onclick=openAdd;$("search").oninput=render;
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");active=b.dataset.s;render()});
 document.querySelectorAll(".nav[data-page]").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));b.classList.add("active");page=b.dataset.page;render()});
@@ -269,6 +336,14 @@ async function checkUpdates(){
 }
 try{updates=JSON.parse(localStorage.getItem("mymanga_updates")||"[]")}catch(e){updates=[]}
 
+restoreSession().then(async(ok)=>{
+ if(ok){
+  $("auth").classList.remove("open");
+  await loadProfile(); await loadPeople(); await loadManga();
+ }else{
+  $("auth").classList.add("open");
+ }
+}).catch(e=>console.warn(e));
 applyAccent(localStorage.getItem("accent")||"#70acf4");applyTheme(localStorage.getItem("theme")||"light");showVerificationBanner();
 </script>
 </body>
