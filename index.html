@@ -28,9 +28,44 @@ nav{position:fixed;left:10px;right:10px;bottom:10px;height:64px;border:1px solid
 .grid .card{padding:7px;border-radius:14px}.grid .cover{border-radius:9px}.grid .title{font-size:13px;margin:7px 2px 4px}.grid .status{font-size:10px;padding:4px 7px}.grid .meta{font-size:10px;margin:3px 2px}.grid .desc{font-size:10px;margin:5px 2px;-webkit-line-clamp:2}.grid .linkBtn{width:30px;height:30px;font-size:16px;margin:5px 0 3px 2px}.grid .delete{font-size:10px;padding:6px 8px;margin-top:4px}.grid .heart{width:28px;height:28px;right:11px;top:11px;font-size:17px}@media(max-width:620px){.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.grid .card{padding:5px}.grid .title{font-size:11px}.grid .status{font-size:9px}.grid .meta,.grid .desc{font-size:9px}.grid .delete{font-size:9px;padding:5px 6px}}@media(max-width:340px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .panel{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 28px));max-height:75vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;z-index:30;box-shadow:0 18px 60px #244b7026}.panel.open{display:block}.panel:before{content:"";position:fixed;inset:-100vh;z-index:-1;background:#183b684d}.bellIcon{display:inline-block;width:17px;height:17px;border:2px solid currentColor;border-radius:10px 10px 6px 6px;position:relative;vertical-align:middle}.bellIcon:before{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);width:6px;height:3px;border-radius:0 0 5px 5px;background:currentColor}.bellIcon:after{content:"";position:absolute;left:50%;top:-4px;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:currentColor}
+
+/* ===== Final compact proportional 4-column library ===== */
+.libraryGrid,.mangaGrid,.booksGrid{
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.mangaCard,.bookCard,.libraryCard{
+  padding:6px !important;
+  min-height:0 !important;
+}
+.mangaCard img,.bookCard img,.libraryCard img,.cover{
+  aspect-ratio:0.78 !important;
+  height:auto !important;
+  max-height:none !important;
+  border-radius:9px !important;
+}
+.mangaCard h3,.bookCard h3,.libraryCard h3{
+  font-size:12px !important;
+  line-height:1.15 !important;
+  margin:5px 1px 2px !important;
+}
+.mangaCard p,.bookCard p,.libraryCard p{
+  font-size:10px !important;
+  line-height:1.15 !important;
+  margin:2px 1px !important;
+}
+.mangaCard .actions,.bookCard .actions,.libraryCard .actions{
+  gap:4px !important;
+  margin-top:4px !important;
+}
+.mangaCard button,.bookCard button,.libraryCard button{
+  min-height:27px !important;
+  padding:2px 5px !important;
+  font-size:10px !important;
+}
 </style></head><body>
 <header><div class="top"><div class="brand">My Manga</div><div class="tools"><button class="tool" id="sortBtn">↕ Sort</button><button class="tool notifyTool" id="notifyBtn" title="Notifications"><span class="bellIcon" aria-label="Notifications"></span><span id="dot" style="display:none;color:var(--a);margin-left:3px">●</span></button><button class="tool" id="filterBtn">♡</button></div></div>
-<input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Dropped">Dropped</button><button class="tab" data-s="Plan to Read">Plan to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
+<input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Dropped">Dropped</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
 <main><div id="verifyBanner" class="verifyBanner"></div><div id="view"></div></main>
 <button class="fab" id="fab">+</button>
 <nav><button class="nav active" data-page="library"><span class="navIcon">▤</span>My Library</button><button class="nav" id="navAdd"><span class="navIcon">＋</span>Add</button><button class="nav" data-page="stats"><span class="navIcon">▥</span>Stats</button><button class="nav" data-page="settings"><span class="navIcon">⚙</span>Settings</button></nav>
@@ -65,3 +100,15 @@ async function boot(){try{const {data}=await sb.auth.getSession();session=data.s
 sb.auth.onAuthStateChange((event,s)=>{session=s;if(s){$("auth").classList.remove("open");loadManga()}else if(event==="SIGNED_OUT")$("auth").classList.add("open")});
 applyAccent(localStorage.getItem("accent")||"#70acf4");applyTheme(localStorage.getItem("theme")||"light");boot();
 </script></body></html>
+<script>
+/* Keep legacy "plan to read" records under the single Want to Read status. */
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelectorAll("select").forEach(sel=>{
+    [...sel.options].forEach(o=>{
+      if(/plan\s*to\s*read/i.test(o.textContent)||/plan[_-]?to[_-]?read/i.test(o.value)){
+        o.textContent="Want to Read"; o.value="want_to_read";
+      }
+    });
+  });
+});
+</script>
