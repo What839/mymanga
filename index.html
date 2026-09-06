@@ -32,7 +32,7 @@ header{display:flex;justify-content:space-between;align-items:center;gap:10px}na
 </div>
 <script>
 const SUPABASE_URL='https://anjwxsqcvhpzoillktmy.supabase.co';
-const SUPABASE_KEY='';
+const SUPABASE_KEY='sb_publishable_pas11tpmdKbIMk8NyOTCRw_O0QAUPnt';
 let sb=null,session=null,profile=null,page="home",authMode="login";
 const $=x=>document.getElementById(x);
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -89,5 +89,5 @@ async function sendFriend(id){const {error}=await sb.from("friend_requests").ups
 async function editProfile(){const p=profile||{};$("view").innerHTML=`<div class="card"><h2>Customize Profile</h2><label>Profile picture URL</label><input id="av" value="${esc(p.avatar_url||"")}"><label>Thumbnail URL</label><input id="th" value="${esc(p.thumbnail_url||"")}"><label>Display name</label><input id="dn" value="${esc(p.display_name||"")}"><label>Username</label><input id="un" value="${esc(p.username||"")}"><label>Bio</label><textarea id="bio">${esc(p.bio||"")}</textarea><label>Manga tags</label><input id="tg" value="${esc((p.tags||[]).join(", "))}" placeholder="Yuri, GL, BL, Yaoi, Romance, Fantasy"><label>Profile visibility</label><select id="pub"><option value="true">Public profile</option><option value="false">Private profile</option></select><button class="primary" id="save">Save profile</button></div>`;$("pub").value=String(p.is_public!==false);$("save").onclick=async()=>{const row={avatar_url:$("av").value.trim()||null,thumbnail_url:$("th").value.trim()||null,display_name:$("dn").value.trim(),username:$("un").value.trim(),bio:$("bio").value.trim(),tags:$("tg").value.split(",").map(x=>x.trim()).filter(Boolean),is_public:$("pub").value==="true",email:session.user.email};const {error}=await sb.from("profiles").update(row).eq("id",session.user.id);if(error)return alert(error.message);await getProfile();page="profile";render()}}
 document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{page=b.dataset.page;render()});
 $("logout").onclick=async()=>{await sb.auth.signOut();session=null;profile=null;$("app").classList.add("hidden");$("authRoot").classList.remove("hidden");authScreen("login")};
-(async()=>{try{if(!window.supabase)throw Error("Supabase library did not load. Check your internet connection.");sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const {data,error}=await sb.auth.getSession();if(error)throw error;if(data.session){session=data.session;await getProfile();showApp()}else authScreen("login")}catch(e){showError(e.message||"Unable to start My Manga.")}})();
+(async()=>{try{if(!window.supabase)throw Error("Supabase library did not load. Check your internet connection.");sb=window.supabase.createClient('https://anjwxsqcvhpzoillktmy.supabase.co','sb_publishable_pas11tpmdKbIMk8NyOTCRw_O0QAUPnt');const {data,error}=await sb.auth.getSession();if(error)throw error;if(data.session){session=data.session;await getProfile();showApp()}else authScreen("login")}catch(e){showError(e.message||"Unable to start My Manga.")}})();
 </script></body></html>
