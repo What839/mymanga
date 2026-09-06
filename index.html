@@ -24,15 +24,67 @@ nav{position:fixed;left:10px;right:10px;bottom:10px;height:64px;border:1px solid
 .verifyBanner{display:none;margin:12px 0 0;padding:13px 15px;border-radius:15px;background:#e8f8ed;border:1px solid #bfe8cb;color:#3f7d53;font-weight:600}.verifyBanner.show{display:block}
 .pwWrap{position:relative;display:flex;align-items:center}.pwWrap input{padding-right:48px}.pwEye{position:absolute;right:6px;top:0;width:auto;margin:0;border:0;background:transparent;color:var(--muted);padding:11px}.eyeIcon{display:inline-block;width:19px;height:12px;border:1.8px solid currentColor;border-radius:70% 20% 70% 20%;transform:rotate(45deg);position:relative}.eyeIcon:after{content:'';position:absolute;width:5px;height:5px;border:1.5px solid currentColor;border-radius:50%;left:5px;top:2px}
 @media(max-width:650px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ===== Compact library layout ===== */
+.libraryGrid,.mangaGrid,.booksGrid{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:10px !important;
+  align-items:start;
+}
+.mangaCard,.bookCard,.libraryCard{
+  min-width:0 !important;
+  width:100% !important;
+  padding:8px !important;
+  border-radius:14px !important;
+}
+.mangaCard img,.bookCard img,.libraryCard img,.cover{
+  width:100% !important;
+  aspect-ratio:3/4 !important;
+  object-fit:cover !important;
+  border-radius:10px !important;
+}
+.mangaCard h3,.bookCard h3,.libraryCard h3{
+  font-size:14px !important;
+  line-height:1.2 !important;
+  margin:7px 2px 3px !important;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.mangaCard p,.bookCard p,.libraryCard p{
+  font-size:11px !important;
+  margin:3px 2px !important;
+}
+.mangaCard .actions,.bookCard .actions,.libraryCard .actions{
+  display:flex !important;
+  gap:5px !important;
+}
+.mangaCard button,.bookCard button,.libraryCard button{
+  min-height:32px !important;
+  padding:4px 7px !important;
+  font-size:11px !important;
+}
+@media(max-width:760px){
+  .libraryGrid,.mangaGrid,.booksGrid{
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:8px !important;
+  }
+}
+@media(max-width:430px){
+  .libraryGrid,.mangaGrid,.booksGrid{gap:6px !important}
+  .mangaCard,.bookCard,.libraryCard{padding:6px !important}
+  .mangaCard h3,.bookCard h3,.libraryCard h3{font-size:12px !important}
+}
 </style></head><body>
 <header><div class="top"><div class="brand">My Manga</div><div class="tools"><button class="tool" id="sortBtn">↕ Sort</button><button class="tool" id="notifyBtn">♧<span id="dot" style="display:none;color:var(--a);margin-left:3px">●</span></button><button class="tool" id="filterBtn">♡</button></div></div>
-<input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="On Hold">On Hold</button><button class="tab" data-s="Dropped">Dropped</button><button class="tab" data-s="Plan to Read">Plan to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
+<input id="search" class="search" placeholder="Search your library..."><div class="tabs"><button class="tab active" data-s="All">All</button><button class="tab" data-s="Reading">Reading</button><button class="tab" data-s="Completed">Completed</button><button class="tab" data-s="Want to Read">Want to Read</button><button class="tab" data-s="Dropped">Dropped</button><button class="tab" data-s="Plan to Read">Plan to Read</button><button class="tab" data-s="Favorites">♡ Favorites</button></div></header>
 <main><div id="verifyBanner" class="verifyBanner"></div><div id="view"></div></main>
 <button class="fab" id="fab">+</button>
 <nav><button class="nav active" data-page="library"><span class="navIcon">▤</span>My Library</button><button class="nav" id="navAdd"><span class="navIcon">＋</span>Add</button><button class="nav" data-page="stats"><span class="navIcon">▥</span>Stats</button><button class="nav" data-page="settings"><span class="navIcon">⚙</span>Settings</button></nav>
 <div class="panel" id="updates"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:20px">Manga Updates</strong><button class="tool" id="closeUpdates">×</button></div><div id="updateList" style="margin-top:10px;color:var(--muted)">No updates yet.</div><button class="btn save" id="checkUpdates" style="width:100%;margin-top:12px">Check for updates</button></div>
-<div class="modal" id="addModal"><div class="sheet"><h2>Add Manga</h2><label>Manga Name</label><input id="mName" placeholder="Manga name"><div class="row"><div><label>Status</label><select id="mStatus"><option>Reading</option><option>Completed</option><option>On Hold</option><option>Dropped</option><option>Plan to Read</option></select></div><div><label>Chapter</label><input id="mChapter" type="number" min="0" value="0"></div></div><label>Link</label><input id="mLink" type="url" placeholder="https://..."><label>Description</label><textarea id="mDesc" placeholder="Description..."></textarea><label>Cover Picture</label><label class="fileBox" for="mCover">Choose cover picture<input id="mCover" type="file" accept="image/*"></label><img id="mPreview" class="preview"><label>Favorite</label><select id="mFav"><option value="no">♡ No</option><option value="yes">♥ Yes</option></select><div class="actions"><button class="btn cancel" id="cancelAdd">Cancel</button><button class="btn save" id="saveAdd">Add Manga</button></div></div></div>
-<div class="modal" id="editModal"><div class="sheet"><h2>Edit Manga</h2><input id="eId" type="hidden"><label>Manga Name</label><input id="eName"><div class="row"><div><label>Status</label><select id="eStatus"><option>Reading</option><option>Completed</option><option>On Hold</option><option>Dropped</option><option>Plan to Read</option></select></div><div><label>Chapter</label><input id="eChapter" type="number" min="0"></div></div><label>Link</label><input id="eLink" type="url"><label>Description</label><textarea id="eDesc"></textarea><div class="actions"><button class="btn cancel" id="cancelEdit">Cancel</button><button class="btn save" id="saveEdit">Save Changes</button></div></div></div>
+<div class="modal" id="addModal"><div class="sheet"><h2>Add Manga</h2><label>Manga Name</label><input id="mName" placeholder="Manga name"><div class="row"><div><label>Status</label><select id="mStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option><option>Dropped</option><option>Plan to Read</option></select></div><div><label>Chapter</label><input id="mChapter" type="number" min="0" value="0"></div></div><label>Link</label><input id="mLink" type="url" placeholder="https://..."><label>Description</label><textarea id="mDesc" placeholder="Description..."></textarea><label>Cover Picture</label><label class="fileBox" for="mCover">Choose cover image<input id="mCover" type="file" accept="image/*"></label><img id="mPreview" class="preview"><label>Favorite</label><select id="mFav"><option value="no">♡ No</option><option value="yes">♥ Yes</option></select><div class="actions"><button class="btn cancel" id="cancelAdd">Cancel</button><button class="btn save" id="saveAdd">Add Manga</button></div></div></div>
+<div class="modal" id="editModal"><div class="sheet"><h2>Edit Manga</h2><input id="eId" type="hidden"><label>Manga Name</label><input id="eName"><div class="row"><div><label>Status</label><select id="eStatus"><option>Reading</option><option>Completed</option><option>Want to Read</option><option>Dropped</option><option>Plan to Read</option></select></div><div><label>Chapter</label><input id="eChapter" type="number" min="0"></div></div><label>Link</label><input id="eLink" type="url"><label>Description</label><textarea id="eDesc"></textarea><div class="actions"><button class="btn cancel" id="cancelEdit">Cancel</button><button class="btn save" id="saveEdit">Save Changes</button></div></div></div>
 <div class="auth open" id="auth"><div class="authbox"><div class="authTitle">My Manga</div><div class="authSub" id="authSub">Log in to sync your manga library</div><label id="loginLabel">Username or email</label><input id="aEmail" placeholder="Username or email" autocomplete="username"><label id="userLabel" style="display:none">Username</label><input id="aUser" style="display:none" placeholder="Username" autocomplete="username"><label>Password</label><div class="pwWrap"><input id="aPass" type="password" placeholder="Password" autocomplete="current-password"><button type="button" class="pwEye" data-target="aPass"><span class="eyeIcon"></span></button></div><div id="repeatWrap" style="display:none"><label>Repeat password</label><div class="pwWrap"><input id="aPass2" type="password" placeholder="Repeat your password" autocomplete="new-password"><button type="button" class="pwEye" data-target="aPass2"><span class="eyeIcon"></span></button></div></div><div class="authMsg" id="authMsg"></div><button class="btn save" id="authBtn" style="width:100%;margin-top:8px">Log In</button><button class="authSwitch" id="switchAuth">Create an account</button><button class="authSwitch" id="forgot">Forgot password?</button></div></div>
 <script>
 const SUPABASE_URL="https://anjwxsqcvhpzoillktmy.supabase.co"; const SUPABASE_KEY="sb_publishable_pas11tpmdKbIMk8NyOTCRw_O0QAUPnt";
@@ -61,3 +113,90 @@ async function boot(){try{const {data}=await sb.auth.getSession();session=data.s
 sb.auth.onAuthStateChange((event,s)=>{session=s;if(s){$("auth").classList.remove("open");loadManga()}else if(event==="SIGNED_OUT")$("auth").classList.add("open")});
 applyAccent(localStorage.getItem("accent")||"#70acf4");applyTheme(localStorage.getItem("theme")||"light");boot();
 </script></body></html>
+<style>
+/* Updates are intentionally separate from the library. */
+#updatesPanel,#mangaUpdates,#updatesSection,.mangaUpdates{
+  margin-top:18px;
+}
+.libraryPage #updatesPanel,.libraryPage #mangaUpdates,.libraryPage #updatesSection{
+  display:none !important;
+}
+</style>
+<script>
+/* Separate Manga Updates view */
+window.openMangaUpdates=function(){
+  const v=document.getElementById("view")||document.querySelector("main");
+  if(!v)return;
+  v.innerHTML=`<section class="card" style="padding:18px">
+    <h2 style="margin-top:0">Manga Updates</h2>
+    <p style="opacity:.7">Updates are kept separate from your library.</p>
+    <div id="updatesList"><div class="emptyState">No updates yet.</div></div>
+  </section>`;
+};
+</script>
+
+<style>
+/* English upload controls */
+input[type=file]{
+  color:transparent;
+  font-size:0;
+}
+input[type=file]::file-selector-button{
+  color:inherit;
+  font:inherit;
+  font-size:14px;
+  border:0;
+  border-radius:12px;
+  padding:10px 14px;
+  cursor:pointer;
+}
+</style>
+<script>
+document.addEventListener("change",function(e){
+  if(e.target && e.target.type==="file"){
+    const label=e.target.closest("label");
+    if(label && !label.dataset.englishPicker){
+      label.dataset.englishPicker="1";
+      const text=label.querySelector(".file-label");
+      if(text) text.textContent="Choose photo";
+    }
+  }
+});
+</script>
+
+<style>
+.mmNotifPanel{position:fixed;right:14px;top:74px;width:min(360px,calc(100vw - 28px));max-height:70vh;overflow:auto;background:#fff;border:1px solid #e5eaf0;border-radius:18px;box-shadow:0 16px 45px rgba(0,0,0,.15);z-index:9999;padding:14px}
+.mmNotifItem{padding:11px 4px;border-bottom:1px solid #edf0f4}.mmNotifItem:last-child{border-bottom:0}
+.mmNotifEmpty{padding:22px;text-align:center;opacity:.6}
+</style>
+<script>
+/* My Manga notification center */
+window.mmNotifications={
+  get(){try{return JSON.parse(localStorage.getItem("mm_notifications")||"[]")}catch(e){return[]}},
+  add(text){
+    const a=this.get();
+    a.unshift({text,at:new Date().toISOString()});
+    localStorage.setItem("mm_notifications",JSON.stringify(a.slice(0,50)));
+    this.refreshBadge();
+  },
+  refreshBadge(){
+    const n=this.get().length;
+    document.querySelectorAll("[data-notification-count],.notificationBadge").forEach(el=>{
+      el.textContent=n?n:"";
+      el.style.display=n?"block":"none";
+    });
+  },
+  open(){
+    document.querySelector(".mmNotifPanel")?.remove();
+    const box=document.createElement("div");box.className="mmNotifPanel";
+    const a=this.get();
+    box.innerHTML="<strong>Notifications</strong>"+(a.length?a.map(x=>`<div class='mmNotifItem'>${esc(x.text)}<div style='font-size:11px;opacity:.55'>${new Date(x.at).toLocaleString()}</div></div>`).join(""):"<div class='mmNotifEmpty'>No notifications yet.</div>");
+    document.body.appendChild(box);
+  }
+};
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-notifications],.notificationButton,.notifButton");
+  if(b){e.preventDefault();mmNotifications.open();}
+});
+document.addEventListener("DOMContentLoaded",()=>mmNotifications.refreshBadge());
+</script>
